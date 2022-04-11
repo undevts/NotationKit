@@ -21,9 +21,10 @@
 // SOFTWARE.
 
 #if SWIFT_PACKAGE
+@_implementationOnly import JSONSimd
+#endif
 
-@_exported import NotationCore
-@_exported import JSONCore
-@_exported import JSONKit
-
-#endif // SWIFT_PACKAGE
+protocol JSONContainer {
+    var storage: JSONStorage { get }
+    var value: JSONValue { get }
+}

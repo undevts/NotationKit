@@ -1,0 +1,6 @@
+framework module JSONSimd {
+  umbrella header "JSON.h"
+
+  export *
+  module * { export * }
+}

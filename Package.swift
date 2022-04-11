@@ -8,21 +8,47 @@ let package = Package(
         .library(
             name: "NotationKit",
             targets: ["NotationKit"]),
+        .library(
+            name: "JSONKit",
+            targets: ["JSONKit"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/undevts/CoreSwift.git", from: "0.1.0"),
+        .package(url: "https://github.com/undevts/CoreSwift.git", from: "0.1.1"),
     ],
     targets: [
         .target(
+            name: "NotationCore",
+            dependencies: []),
+        .target(
             name: "NotationKit",
             dependencies: [
-                "JSONKit"
+                "JSONKit",
+            ]),
+        .target(
+            name: "JSONCore",
+            dependencies: [
+                .product(name: "CoreCxx", package: "CoreSwift"),
+            ]),
+        .target(
+            name: "JSONSimd",
+            dependencies: [
+                "JSONCore",
             ]),
         .target(
             name: "JSONKit",
-            dependencies: []),
+            dependencies: [
+                "NotationCore",
+                "JSONCore",
+                "JSONSimd",
+            ],
+            exclude: [
+                "JSON+Decoded.swift.gyb",
+                "JSONStream+Write.swift.gyb",
+            ]),
         .testTarget(
-            name: "NotationKitTests",
-            dependencies: ["NotationKit"]),
-    ]
+            name: "JSONKitTests",
+            dependencies: ["JSONKit"]),
+    ],
+    cLanguageStandard: .c11,
+    cxxLanguageStandard: .cxx17
 )

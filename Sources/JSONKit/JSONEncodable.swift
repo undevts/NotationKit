@@ -20,10 +20,41 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if SWIFT_PACKAGE
+import Foundation
 
-@_exported import NotationCore
-@_exported import JSONCore
-@_exported import JSONKit
+public typealias JSONCodable = JSONEncodable & JSONDecodable
 
-#endif // SWIFT_PACKAGE
+public protocol JSONEncodable {
+    func encode(to stream: inout JSONStream)
+}
+
+extension JSONEncodable {
+    @inlinable
+    public func encoded() -> Data {
+        var stream = JSONStream()
+        encode(to: &stream)
+        return stream.finalize()
+    }
+}
+
+extension Array: JSONEncodable where Element: JSONEncodable {
+    @inlinable
+    public func encode(to stream: inout JSONStream) {
+        stream.beginArray()
+        for item in self {
+            item.encode(to: &stream)
+        }
+        stream.endArray()
+    }
+}
+
+extension Dictionary: JSONEncodable where Key == String, Value: JSONEncodable {
+    @inlinable
+    public func encode(to stream: inout JSONStream) {
+        stream.beginObject()
+        for (key, value) in self {
+            stream.write(key: key, value)
+        }
+        stream.endObject()
+    }
+}

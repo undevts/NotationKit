@@ -1,0 +1,151 @@
+// MIT License
+//
+// Copyright (c) 2022 Notation Kit Project Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+%{
+keys = ['Int', 'Int32', 'Int64', 'UInt', 'UInt32', 'UInt64', 'Double', 'Float', 'Bool', 'String', 'T']
+}%
+extension JSONStream {
+% for type in keys:
+    @inlinable
+% if type == "T":
+    public mutating func write<T>(_ value: T) where T: JSONEncodable {
+% else:
+    public mutating func write(_ value: ${type}) {
+% end
+% if type == "String":
+        pushState(.value)
+        write(byte: 0x22) // "
+        write(raw: value)
+        write(byte: 0x22) // "
+% elif type == "T":
+        value.encode(to: &self)
+% else:
+        writeValue(String(value))
+% end
+    }
+
+    @inlinable
+% if type == "T":
+    public mutating func write<T>(optional value: T?) where T: JSONEncodable {
+% else:
+    public mutating func write(optional value: ${type}?) {
+% end
+        if let value = value {
+% if type == "String":
+            pushState(.value)
+            write(byte: 0x22) // "
+            write(raw: value)
+            write(byte: 0x22) // "
+% elif type == "T":
+            value.encode(to: &self)
+% else:
+            writeValue(String(value))
+% end
+        } else if useNull {
+            writeNull()
+        }
+    }
+
+    @inlinable
+% if type == "T":
+    public mutating func write<T>(key: String, _ value: T) where T: JSONEncodable {
+% else:
+    public mutating func write(key: String, _ value: ${type}) {
+% end
+        writeKey(key)
+        writeColon()
+% if type == "String":
+        write(value)
+% elif type == "T":
+        value.encode(to: &self)
+% else:
+        writeValue(String(value))
+% end
+    }
+
+    @inlinable
+% if type == "T":
+    public mutating func write<T>(key: String, optional value: T?) where T: JSONEncodable {
+% else:
+    public mutating func write(key: String, optional value: ${type}?) {
+% end
+        guard value != nil || useNull else {
+            return
+        }
+        writeKey(key)
+        writeColon()
+        if let value = value {
+% if type == "String":
+            write(value)
+% elif type == "T":
+            value.encode(to: &self)
+% else:
+            writeValue(String(value))
+% end
+        } else {
+            writeNull()
+        }
+    }
+
+    @inlinable
+% if type == "T":
+    public mutating func write<Key, T>(key: Key, _ value: T) where Key: CodingKey, T: JSONEncodable {
+% else:
+    public mutating func write<Key>(key: Key, _ value: ${type}) where Key: CodingKey {
+% end
+        writeKey(key.stringValue)
+        writeColon()
+% if type == "String":
+        write(value)
+% elif type == "T":
+        value.encode(to: &self)
+% else:
+        writeValue(String(value))
+% end
+    }
+
+    @inlinable
+% if type == "T":
+    public mutating func write<Key, T>(key: Key, optional value: T?) where Key: CodingKey, T: JSONEncodable {
+% else:
+    public mutating func write<Key>(key: Key, optional value: ${type}?) where Key: CodingKey {
+% end
+        guard value != nil || useNull else {
+            return
+        }
+        writeKey(key.stringValue)
+        writeColon()
+        if let value = value {
+% if type == "String":
+            write(value)
+% elif type == "T":
+            value.encode(to: &self)
+% else:
+            writeValue(String(value))
+% end
+        } else {
+            writeNull()
+        }
+    }
+
+% end
+}

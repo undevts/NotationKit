@@ -1,0 +1,156 @@
+// MIT License
+//
+// Copyright (c) 2022 Notation Kit Project Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+%{
+keys = ['Int', 'Int32', 'Int64', 'UInt', 'UInt32', 'UInt64', 'Double', 'Float', 'Bool', 'String', 'T']
+types = {
+'Int': 'int', 'Int32': 'int32', 'Int64': 'int64',
+'UInt': 'uint', 'UInt32': 'uint32', 'UInt64': 'uint64',
+'Double': 'double', 'Float': 'float', 'Bool': 'bool',
+'String': 'string', 'T': 't'
+}
+}%
+extension JSON {
+% for type in keys:
+%   value = types[type]
+    @inlinable
+% if type == 'T':
+    public func decoded<T>() -> T where T: JSONDecodable {
+        T.init(self)
+    }
+
+    @inlinable
+    public func decoded<T>(as type: T.Type) -> T where T: JSONDecodable {
+        T.init(self)
+% else:
+    public func decoded() -> ${type} {
+        ${value}
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public func decoded<T>(`default`: @autoclosure () -> T) -> T? where T: JSONFailable {
+        T.init(self) ?? `default`()
+% else:
+    public func decoded(`default`: @autoclosure () -> ${type}) -> ${type} {
+        ${value}Value ?? `default`()
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public func decoded<T>(key: String) -> T where T: JSONDecodable {
+        T.init(item(key: key))
+    }
+
+    @inlinable
+    public func decoded<T>(key: String, as type: T.Type) -> T where T: JSONDecodable {
+        T.init(item(key: key))
+% else:
+    public func decoded(key: String) -> ${type} {
+        item(key: key).${value}
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T? where T: JSONFailable {
+        T.init(item(key: key)) ?? `default`()
+% else:
+    public func decoded(key: String, `default`: @autoclosure () -> ${type}) -> ${type} {
+        item(key: key).${value}Value ?? `default`()
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public func decoded<T, Key>(key: Key) -> T where T: JSONDecodable, Key: CodingKey {
+        T.init(item(key: key))
+    }
+
+    @inlinable
+    public func decoded<T, Key>(key: Key, as type: T.Type) -> T where T: JSONDecodable, Key: CodingKey {
+        T.init(item(key: key))
+% else:
+    public func decoded<Key>(key: Key) -> ${type} where Key: CodingKey {
+        item(key: key).${value}
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public func decoded<T, Key>(key: Key, `default`: @autoclosure () -> T) -> T where T: JSONFailable, Key: CodingKey {
+        T.init(item(key: key)) ?? `default`()
+% else:
+    public func decoded<Key>(key: Key, `default`: @autoclosure () -> ${type}) -> ${type} where Key: CodingKey {
+        item(key: key).${value}Value ?? `default`()
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public func decodedValue<T>() -> T? where T: JSONFailable {
+        T.init(self)
+    }
+
+    @inlinable
+    public func decodedValue<T>(as type: T.Type) -> T? where T: JSONFailable {
+        T.init(self)
+% else:
+    public func decodedValue() -> ${type}? {
+        ${value}Value
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public func decodedValue<T>(key: String) -> T? where T: JSONFailable {
+        T.init(item(key: key))
+    }
+
+    @inlinable
+    public func decodedValue<T>(key: String, as type: T.Type) -> T? where T: JSONFailable {
+        T.init(item(key: key))
+% else:
+    public func decodedValue(key: String) -> ${type}? {
+        item(key: key).${value}Value
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public func decodedValue<T, Key>(key: Key) -> T? where T: JSONFailable, Key: CodingKey {
+        T.init(item(key: key))
+    }
+
+    @inlinable
+    public func decodedValue<T, Key>(key: Key, as type: T.Type) -> T? where T: JSONFailable, Key: CodingKey {
+        T.init(item(key: key))
+% else:
+    public func decodedValue<Key>(key: Key) -> ${type}? where Key: CodingKey {
+        item(key: key).${value}Value
+% end
+    }
+
+% end
+}

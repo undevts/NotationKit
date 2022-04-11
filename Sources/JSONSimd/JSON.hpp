@@ -20,10 +20,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if SWIFT_PACKAGE
+#ifndef NOTATION_KIT_JSON_HPP
+#define NOTATION_KIT_JSON_HPP
 
-@_exported import NotationCore
-@_exported import JSONCore
-@_exported import JSONKit
+#include <JSON.h>
+#include "simdjson.h"
 
-#endif // SWIFT_PACKAGE
+CS_SIMPLE_CONVERSION(simdjson::dom::document, JSONRef)
+
+CS_SIMPLE_CONVERSION(simdjson::dom::element, JSONValueRef)
+
+CS_SIMPLE_CONVERSION(simdjson::dom::array, JSONArrayRef)
+
+CS_SIMPLE_CONVERSION(simdjson::dom::object, JSONObjectRef)
+
+CS_SIMPLE_CONVERSION(simdjson::padded_string, JSONInputRef)
+
+#endif // NOTATION_KIT_JSON_HPP

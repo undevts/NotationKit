@@ -1,3 +1,3 @@
 # NotationKit
 
-A description of this package.
+A much faster decoding & encoding Framework.
