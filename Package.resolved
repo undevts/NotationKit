@@ -1,0 +1,14 @@
+{
+  "pins" : [
+    {
+      "identity" : "coreswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/undevts/CoreSwift.git",
+      "state" : {
+        "revision" : "267f6d86a8578eb166aca556d29210994ab5b9b9",
+        "version" : "0.1.0"
+      }
+    }
+  ],
+  "version" : 2
+}
