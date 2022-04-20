@@ -32,6 +32,28 @@ public struct JSONFormatting: OptionSet {
     public static let writeNull =  JSONFormatting(rawValue: 1 << 0)
 }
 
+#if DEBUG
+private func writeLog(_ message: String) {
+    print(message)
+}
+
+private func writeLog(_ message: String, condition: () -> Bool) {
+    if condition() {
+        print(message)
+    }
+}
+#else
+@_transparent
+private func writeLog(_ message: String) {
+    // Do nothing.
+}
+
+@_transparent
+private func writeLog(_ message: String, condition: () -> Bool) {
+    // Do nothing.
+}
+#endif
+
 public struct JSONStream {
     @usableFromInline
     enum State {
@@ -40,8 +62,9 @@ public struct JSONStream {
 
     @usableFromInline
     private(set) var data = Data()
-    private var states: [State] = []
+    private var root: State?
     private var scope: State?
+    private var states: [State] = []
     public let formatting: JSONFormatting
 
     @_transparent
@@ -133,88 +156,49 @@ public struct JSONStream {
 
     @usableFromInline
     mutating func writeValue(_ value: String) {
-        pushState(.value)
-//        if let scope = scope {
-//            switch scope {
-//            case .array:
-//                writeComma()
-//            case .object:
-//                // Commas should be written when writing keys.
-//                break
-//            case .value:
-//#if DEBUG
-//                print("Writing json values repeatedly could be problematic.")
-//#else
-//                break
-//#endif
-//            case .key:
-//                fatalError("No such scope")
-//            }
-//        }
+        pushValueState()
         write(raw: value)
     }
 
     @usableFromInline
     mutating func writeKey(_ value: String) {
-        assert(scope == .object)
-        if state == .value {
+        switch state {
+        case .array, .none:
+            writeLog("Unexpected JSON.Key")
+        case .value:
+            writeLog("Expect JSON.Object") { scope != .object }
+            _ = states.popLast()
+            states.append(.key)
             writeComma()
+        case .object:
+            states.append(.key)
+        case .key:
+            writeLog("Unexpected JSON.Key")
         }
         write(byte: 0x22) // "
         write(raw: value)
         write(byte: 0x22) // "
     }
-    
 
     @inline(__always)
     @usableFromInline
-    mutating func pushState(_ state: State) {
-        switch scope {
-        case .array:
-            if self.state == .value {
-                writeComma()
-            }
-        case .object:
-            if self.state == .key {
-                _ = states.removeLast()
-                writeColon()
-            } else if state == .key && self.state != .object {
-                writeComma()
-            }
-        case .key, .value, .none:
-            break
-        }
+    mutating func pushValueState() {
+        root = root ?? .value
         switch state {
-        case .array, .object:
-            scope = state
+        case .array, .none:
+            states.append(.value)
         case .value:
-            if self.state == .value {
-                return
-            } else if states.isEmpty {
-                scope = .value // Root object is a single json value.
-            }
+            writeLog("Unexpected JSON.Value") { scope != .array }
+            writeComma()
+        case .object:
+            writeLog("Expect JSON.Key")
         case .key:
-            break
+            writeLog("Unexpected JSON.Value") { scope != .object }
+            writeColon()
+            _ = states.popLast()
+            states.append(.value)
         }
-        states.append(state)
     }
-
-    @inline(__always)
-    mutating func popState(_ state: State) {
-
-    }
-
-//    @inline(__always)
-//    @usableFromInline
-//    mutating func pushScope() {
-//
-//    }
-//
-//    @inline(__always)
-//    @usableFromInline
-//    mutating func popScope() {
-//
-//    }
 }
 
 extension JSONStream {
@@ -228,13 +212,50 @@ extension JSONStream {
     // MARK: - JSON Array
 
     public mutating func beginArray() {
-        pushState(.array)
+        root = root ?? .array
+        switch state {
+        case .array, .none: // Empty array or Empty root
+            states.append(.array)
+        case .value:
+            writeLog("Root is a JSON.Value, 'beginArray' will leads error.") {
+                root == .value
+            }
+            writeLog("Expect JSON.Key") { scope == .object }
+            _ = states.popLast()
+            states.append(.array)
+            writeComma()
+        case .object:
+            writeLog("Expect JSON.Key")
+        case .key:
+            _ = states.popLast()
+            states.append(.array)
+            writeColon()
+        }
+        scope = .array
         write(byte: 0x5B) // [
     }
 
     public mutating func endArray() {
+        switch state {
+        case .none, .key, .object:
+            writeLog("Unexpected 'endArray'")
+        case .value:
+            writeLog("Unexpected 'endArray'") { scope == .object }
+            _ = states.popLast()
+            writeLog("Expect JSON.Array") { scope != .array }
+            _ = states.popLast()
+            scope = state
+            if !states.isEmpty {
+                states.append(.value)
+            }
+        case .array: // Empty array
+            _ = states.popLast()
+            scope = state
+            if !states.isEmpty {
+                states.append(.value)
+            }
+        }
         write(byte: 0x5D) // ]
-        popState(.array)
     }
 
     public mutating func writeArray(_ body: (inout JSONStream) -> Void) {
@@ -247,18 +268,54 @@ extension JSONStream {
 
     @inlinable
     public mutating func write(key: String) {
-        pushState(.key)
         writeKey(key)
     }
 
     public mutating func beginObject() {
-        pushState(.object)
+        root = root ?? .object
+        switch state {
+        case .array, .none:
+            states.append(.object)
+        case .value:
+            writeLog("Root is a JSON.Value, 'beginObject' will leads error.") {
+                root == .value
+            }
+            writeLog("Expect JSON.Key") { scope == .object }
+            _ = states.popLast()
+            states.append(.object)
+            writeComma()
+        case .object:
+            writeLog("Expect JSON.Key")
+        case .key:
+            _ = states.popLast()
+            states.append(.object)
+            writeColon()
+        }
+        scope = .object
         write(byte: 0x7B) // {
     }
 
     public mutating func endObject() {
+        switch state {
+        case .none, .key, .array:
+            writeLog("Unexpected 'endObject'")
+        case .value:
+            writeLog("Unexpected 'endObject'") { scope == .array }
+            _ = states.popLast()
+            writeLog("Expect JSON.Object") { scope != .object }
+            _ = states.popLast()
+            scope = state
+            if !states.isEmpty {
+                states.append(.value)
+            }
+        case .object: // Empty object
+            _ = states.popLast()
+            scope = state
+            if !states.isEmpty {
+                states.append(.value)
+            }
+        }
         write(byte: 0x7D) // }
-        popState(.object)
     }
 
     public mutating func writeObject(_ body: (inout JSONStream) -> Void) {

@@ -481,7 +481,7 @@ extension JSON: TypeNotation {
             }
             var array = JSONArray()
             _ = json_get_array(ref, &array)
-            if index <= json_array_get_count(&array) {
+            if index >= 0 && index <= json_array_get_count(&array) {
                 var value = JSONValue()
                 _ = json_array_get(&array, index, &value)
                 return JSON(storage: storage, value: value)

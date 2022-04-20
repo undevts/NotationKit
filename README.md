@@ -1,3 +1,3 @@
 # NotationKit
 
-A much faster decoding & encoding Framework.
+A much faster decoding & encoding framework.

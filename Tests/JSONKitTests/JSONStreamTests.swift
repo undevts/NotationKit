@@ -259,6 +259,25 @@ final class JSONStreamTests: XCTestCase {
         XCTAssertEqual(json, #"{"array":[true,false]}"#)
     }
 
+    func testArraysInObject() {
+        let json = write { stream in
+            stream.beginObject()
+            stream.write(key: "array")
+            stream.beginArray()
+            stream.write(true)
+            stream.write(false)
+            stream.endArray()
+
+            stream.write(key: "array2")
+            stream.beginArray()
+            stream.endArray()
+
+            stream.write(key: "100", 200)
+            stream.endObject()
+        }
+        XCTAssertEqual(json, #"{"array":[true,false],"array2":[],"100":200}"#)
+    }
+
     func testObjectInObject() {
         let json = write { stream in
             stream.beginObject()
@@ -275,13 +294,34 @@ final class JSONStreamTests: XCTestCase {
     func testObjectInArray() {
         let json = write { stream in
             stream.beginArray()
-            stream.write("object")
             stream.beginObject()
             stream.write(key: "bool", true)
             stream.write(key: "int", 100)
             stream.endObject()
             stream.endArray()
         }
-        XCTAssertEqual(json, #"["object",{"bool":true,"int":100}]"#)
+        XCTAssertEqual(json, #"[{"bool":true,"int":100}]"#)
+    }
+
+    func testObjectsInArray() {
+        let json = write { stream in
+            stream.beginArray()
+            stream.beginObject()
+            stream.write(key: "bool", true)
+            stream.write(key: "int", 100)
+            stream.endObject()
+
+            stream.beginObject()
+            stream.write(key: "bool", false)
+            stream.write(key: "int", 200)
+            stream.endObject()
+
+            stream.beginObject()
+            stream.endObject()
+
+            stream.write(999)
+            stream.endArray()
+        }
+        XCTAssertEqual(json, #"[{"bool":true,"int":100},{"bool":false,"int":200},{},999]"#)
     }
 }

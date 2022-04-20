@@ -26,7 +26,7 @@ import Foundation
 @_implementationOnly import JSONSimd
 #endif
 
-#if START_JSON_ENABLE_COMBINE && canImport(Combine)
+#if NK_JSON_ENABLE_COMBINE && canImport(Combine)
 import Combine
 #endif
 
@@ -50,12 +50,13 @@ public final class JSONSimdDecoder {
     /// Contextual user-provided information for use during decoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
 
+#if NK_JSON_BUILD_FOR_EVOLUTION
     /// Creates a new, reusable JSON decoder with the default formatting settings and decoding strategies.
-#if JSON_BUILD_FOR_EVOLUTION
     public init() {
         // Do nothing.
     }
 #else
+    /// Creates a new, reusable JSON decoder with the default formatting settings and decoding strategies.
     @inlinable
     public init() {
         // Do nothing.
@@ -105,7 +106,7 @@ public final class JSONSimdDecoder {
     }
 }
 
-#if START_JSON_ENABLE_COMBINE && canImport(Combine)
+#if NK_JSON_ENABLE_COMBINE && canImport(Combine)
 @available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 6.0, *)
 extension JSONSimdDecoder: TopLevelDecoder {
     public typealias Input = Data

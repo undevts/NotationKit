@@ -38,7 +38,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: Int) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -48,7 +47,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -59,7 +57,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: Int) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -69,7 +66,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -94,7 +90,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: Int32) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -104,7 +99,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -115,7 +109,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: Int32) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -125,7 +118,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -150,7 +142,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: Int64) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -160,7 +151,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -171,7 +161,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: Int64) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -181,7 +170,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -206,7 +194,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: UInt) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -216,7 +203,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -227,7 +213,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: UInt) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -237,7 +222,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -262,7 +246,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: UInt32) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -272,7 +255,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -283,7 +265,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: UInt32) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -293,7 +274,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -318,7 +298,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: UInt64) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -328,7 +307,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -339,7 +317,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: UInt64) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -349,7 +326,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -374,7 +350,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: Double) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -384,7 +359,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -395,7 +369,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: Double) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -405,7 +378,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -430,7 +402,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: Float) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -440,7 +411,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -451,7 +421,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: Float) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -461,7 +430,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -486,7 +454,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: Bool) {
         writeKey(key)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -496,7 +463,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -507,7 +473,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: Bool) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         writeValue(String(value))
     }
 
@@ -517,7 +482,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             writeValue(String(value))
         } else {
@@ -527,7 +491,7 @@ extension JSONStream {
 
     @inlinable
     public mutating func write(_ value: String) {
-        pushState(.value)
+        pushValueState()
         write(byte: 0x22) // "
         write(raw: value)
         write(byte: 0x22) // "
@@ -536,7 +500,7 @@ extension JSONStream {
     @inlinable
     public mutating func write(optional value: String?) {
         if let value = value {
-            pushState(.value)
+            pushValueState()
             write(byte: 0x22) // "
             write(raw: value)
             write(byte: 0x22) // "
@@ -548,7 +512,6 @@ extension JSONStream {
     @inlinable
     public mutating func write(key: String, _ value: String) {
         writeKey(key)
-        writeColon()
         write(value)
     }
 
@@ -558,7 +521,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             write(value)
         } else {
@@ -569,7 +531,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key>(key: Key, _ value: String) where Key: CodingKey {
         writeKey(key.stringValue)
-        writeColon()
         write(value)
     }
 
@@ -579,7 +540,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             write(value)
         } else {
@@ -604,7 +564,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<T>(key: String, _ value: T) where T: JSONEncodable {
         writeKey(key)
-        writeColon()
         value.encode(to: &self)
     }
 
@@ -614,7 +573,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
             value.encode(to: &self)
         } else {
@@ -625,7 +583,6 @@ extension JSONStream {
     @inlinable
     public mutating func write<Key, T>(key: Key, _ value: T) where Key: CodingKey, T: JSONEncodable {
         writeKey(key.stringValue)
-        writeColon()
         value.encode(to: &self)
     }
 
@@ -635,7 +592,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
             value.encode(to: &self)
         } else {

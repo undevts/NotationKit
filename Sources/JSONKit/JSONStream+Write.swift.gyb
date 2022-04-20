@@ -32,7 +32,7 @@ extension JSONStream {
     public mutating func write(_ value: ${type}) {
 % end
 % if type == "String":
-        pushState(.value)
+        pushValueState()
         write(byte: 0x22) // "
         write(raw: value)
         write(byte: 0x22) // "
@@ -51,7 +51,7 @@ extension JSONStream {
 % end
         if let value = value {
 % if type == "String":
-            pushState(.value)
+            pushValueState()
             write(byte: 0x22) // "
             write(raw: value)
             write(byte: 0x22) // "
@@ -72,7 +72,6 @@ extension JSONStream {
     public mutating func write(key: String, _ value: ${type}) {
 % end
         writeKey(key)
-        writeColon()
 % if type == "String":
         write(value)
 % elif type == "T":
@@ -92,7 +91,6 @@ extension JSONStream {
             return
         }
         writeKey(key)
-        writeColon()
         if let value = value {
 % if type == "String":
             write(value)
@@ -113,7 +111,6 @@ extension JSONStream {
     public mutating func write<Key>(key: Key, _ value: ${type}) where Key: CodingKey {
 % end
         writeKey(key.stringValue)
-        writeColon()
 % if type == "String":
         write(value)
 % elif type == "T":
@@ -133,7 +130,6 @@ extension JSONStream {
             return
         }
         writeKey(key.stringValue)
-        writeColon()
         if let value = value {
 % if type == "String":
             write(value)
