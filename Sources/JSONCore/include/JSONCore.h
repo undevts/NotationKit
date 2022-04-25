@@ -28,7 +28,7 @@
 #endif
 
 #if __has_include(<CoreSwift/Language.h>)
-#include <StartPoint/Language.h>
+#include <CoreSwift/Language.h>
 #else
 #include <Language.h>
 #endif
