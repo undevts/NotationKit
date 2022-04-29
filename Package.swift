@@ -45,6 +45,11 @@ let package = Package(
                 "JSON+Decoded.swift.gyb",
                 "JSONStream+Write.swift.gyb",
             ]),
+        .target(
+            name: "AnyNotationKit",
+            dependencies: [
+                "NotationCore",
+            ]),
         .testTarget(
             name: "JSONKitTests",
             dependencies: ["JSONKit"]),
