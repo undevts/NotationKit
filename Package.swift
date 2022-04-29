@@ -11,6 +11,9 @@ let package = Package(
         .library(
             name: "JSONKit",
             targets: ["JSONKit"]),
+        .library(
+            name: "AnyNotationKit",
+            targets: ["AnyNotationKit"]),
     ],
     dependencies: [
         .package(url: "https://github.com/undevts/CoreSwift.git", from: "0.1.1"),
@@ -23,6 +26,7 @@ let package = Package(
             name: "NotationKit",
             dependencies: [
                 "JSONKit",
+                "AnyNotationKit",
             ]),
         .target(
             name: "JSONCore",
