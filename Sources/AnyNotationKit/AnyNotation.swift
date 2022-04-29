@@ -22,6 +22,10 @@
 
 import Foundation
 
+#if canImport(CoreGraphics)
+import CoreGraphics
+#endif
+
 #if SWIFT_PACKAGE
 @_exported import NotationCore
 #endif
@@ -79,7 +83,7 @@ public final class AnyNotation {
         guard kind == .opaque else {
             return
         }
-        resolve(object: _rawArray)
+        resolve(object: _rawValue)
     }
 
     private func resolve(object: Any?) {
@@ -151,12 +155,15 @@ extension AnyNotation {
             return temp.uint8Value as! T?
         } else if type == Float.self {
             return temp.floatValue as! T?
-        } else if type == CGFloat.self {
-            return CGFloat(temp.doubleValue) as! T?
         } else if type == Decimal.self {
             return temp.decimalValue as! T?
         }
-        return nil
+#if canImport(CoreGraphics)
+        if type == CGFloat.self {
+            return CGFloat(temp.doubleValue) as! T?
+        }
+#endif
+         return nil
     }
 
     public func to<T>(_ type: T.Type) -> T? {

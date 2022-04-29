@@ -50,9 +50,20 @@ let package = Package(
             dependencies: [
                 "NotationCore",
             ]),
+        .target(
+            name: "AnyNotationKitTestsSupport",
+            dependencies: [
+                "AnyNotationKit",
+            ]),
         .testTarget(
             name: "JSONKitTests",
             dependencies: ["JSONKit"]),
+        .testTarget(
+            name: "AnyNotationKitTests",
+            dependencies: [
+                "AnyNotationKit",
+                "AnyNotationKitTestsSupport",
+            ]),
     ],
     cLanguageStandard: .c11,
     cxxLanguageStandard: .cxx17

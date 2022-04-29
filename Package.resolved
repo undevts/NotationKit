@@ -5,8 +5,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/undevts/CoreSwift.git",
       "state" : {
-        "revision" : "4706632b00da651c3ccda642dc93600ac4a8e093",
-        "version" : "0.1.1"
+        "revision" : "d4a31996c47b25bd8465a8a538895da91686b71f",
+        "version" : "0.1.2"
       }
     }
   ],
