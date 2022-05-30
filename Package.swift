@@ -40,6 +40,9 @@ let package = Package(
             name: "JSONSimd",
             dependencies: [
                 "JSONCore",
+            ],
+            exclude: [
+                "LICENSE",
             ]),
         .target(
             name: "JSONKit",
