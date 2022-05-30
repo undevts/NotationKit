@@ -23,55 +23,84 @@
 import XCTest
 @testable import JSONKit
 
-func write(_ method: (inout JSONStream) -> Void) -> String {
-    var stream = JSONStream()
+func write(null: Bool = false, _ method: (inout JSONStream) -> Void) -> String {
+    var stream = JSONStream(formatting: null ? .writeNull : [])
     method(&stream)
     let data = stream.finalize()
     return String(data: data, encoding: .utf8)!
 }
 
+func check(expected: String, null: Bool = false, file: StaticString = #filePath, line: UInt = #line,
+    _ method: (inout JSONStream) -> Void) {
+    let value = write(null: null, method)
+    XCTAssertEqual(value, expected, file: file, line: line)
+}
+
+func check(expected: String, null: Bool = false, file: StaticString = #filePath, line: UInt = #line,
+    _ method: (inout JSONStream) -> Void, encodable: (inout JSONStream) -> Void) {
+    let value = write(null: null, method)
+    XCTAssertEqual(value, expected, file: file, line: line)
+
+    let value2 = write(null: null, encodable)
+    XCTAssertEqual(value2, expected, file: file, line: line)
+}
+
 final class JSONStreamTests: XCTestCase {
-    func testSingleValue() {
-        let string = write { stream in
-            stream.write("Foobar")
+    func testString() {
+        let v1 = write { stream in
+            stream.value("")
         }
-        XCTAssertEqual(string, "\"Foobar\"")
-        let int = write { stream in
-            stream.write(887 as Int)
+        XCTAssertEqual(v1, "\"\"")
+        let v2 = write { stream in
+            stream.value(" ")
         }
-        XCTAssertEqual(int, "887")
-        let int32 = write { stream in
-            stream.write(-2147483648 as Int32) // Int32.min
+        XCTAssertEqual(v2, "\" \"")
+        let v3 = write { stream in
+            stream.value("Foobar")
         }
-        XCTAssertEqual(int32, "-2147483648")
-        let int64 = write { stream in
-            stream.write(2147483648 as Int64) // Int32.max + 1
+        XCTAssertEqual(v3, "\"Foobar\"")
+        let v4 = write { stream in
+            stream.value("\n\t")
         }
-        XCTAssertEqual(int64, "2147483648")
-        let uint = write { stream in
-            stream.write(44334 as UInt)
+        XCTAssertEqual(v4, "\"\\n\\t\"")
+    }
+
+    func testSpecialDoubleValue() {
+        check(expected: "nan") { stream in
+            stream.value(Double.nan)
         }
-        XCTAssertEqual(uint, "44334")
-        let uint32 = write { stream in
-            stream.write(UInt32.max)
+        check(expected: "inf") { stream in
+            stream.value(Double.infinity)
         }
-        XCTAssertEqual(uint32, "4294967295")
-        let double = write { stream in
-            stream.write(Double.pi)
+        check(expected: "-inf") { stream in
+            var infinity = Double.infinity
+            infinity.negate()
+            stream.value(infinity)
         }
-        XCTAssertEqual(double, "3.141592653589793")
-        let float = write { stream in
-            stream.write(Float.pi)
+        check(expected: "-0.0") { stream in
+            var zero = Double.zero
+            zero.negate()
+            stream.value(zero)
         }
-        XCTAssertEqual(float, "3.1415925")
-        let truly = write { stream in
-            stream.write(true)
+    }
+
+    func testSpecialFloatValue() {
+        check(expected: "nan") { stream in
+            stream.value(Float.nan)
         }
-        XCTAssertEqual(truly, "true")
-        let falsely = write { stream in
-            stream.write(false)
+        check(expected: "inf") { stream in
+            stream.value(Float.infinity)
         }
-        XCTAssertEqual(falsely, "false")
+        check(expected: "-inf") { stream in
+            var infinity = Float.infinity
+            infinity.negate()
+            stream.value(infinity)
+        }
+        check(expected: "-0.0") { stream in
+            var zero = Float.zero
+            zero.negate()
+            stream.value(zero)
+        }
     }
 
     func testEmptyArray() {
@@ -85,7 +114,7 @@ final class JSONStreamTests: XCTestCase {
     func testArray() {
         let json = write { stream in
             stream.beginArray()
-            stream.write(false)
+            stream.value(false)
             stream.endArray()
         }
         XCTAssertEqual(json, "[false]")
@@ -94,8 +123,8 @@ final class JSONStreamTests: XCTestCase {
     func testArray2() {
         let json = write { stream in
             stream.beginArray()
-            stream.write(false)
-            stream.write(true)
+            stream.value(false)
+            stream.value(true)
             stream.endArray()
         }
         XCTAssertEqual(json, "[false,true]")
@@ -104,26 +133,26 @@ final class JSONStreamTests: XCTestCase {
     func testArray3() {
         let json = write { stream in
             stream.beginArray()
-            stream.write(false)
-            stream.write(123458)
-            stream.write("\"123458\"")
-            stream.write("君の日本語は上手です")
+            stream.value(false)
+            stream.value(123458)
+            stream.value("\"123458\"")
+            stream.value("君の日本語は上手です")
             stream.endArray()
         }
-        XCTAssertEqual(json, "[false,123458,\"\"123458\"\",\"君の日本語は上手です\"]")
+        XCTAssertEqual(json, #"[false,123458,"\"123458\"","君の日本語は上手です"]"#)
     }
 
     func testEmptyArrayClosure() {
         let json = write { stream in
-            stream.writeArray { _ in }
+            stream.array { _ in }
         }
         XCTAssertEqual(json, "[]")
     }
 
     func testArrayClosure() {
         let json = write { stream in
-            stream.writeArray { target in
-                target.write(false)
+            stream.array { target in
+                target.value(false)
             }
         }
         XCTAssertEqual(json, "[false]")
@@ -131,9 +160,9 @@ final class JSONStreamTests: XCTestCase {
 
     func testArrayClosure2() {
         let json = write { stream in
-            stream.writeArray { target in
-                target.write(false)
-                target.write(true)
+            stream.array { target in
+                target.value(false)
+                target.value(true)
             }
         }
         XCTAssertEqual(json, "[false,true]")
@@ -141,14 +170,15 @@ final class JSONStreamTests: XCTestCase {
 
     func testArrayClosure3() {
         let json = write { stream in
-            stream.writeArray { target in
-                target.write(false)
-                target.write(123458)
-                target.write("\"123458\"")
-                target.write("君の日本語は上手です")
+            stream.array { target in
+                target.value(false)
+                target.value(123458)
+                target.value("\"123458\"")
+                target.value("君の日本語は上手です")
             }
         }
-        XCTAssertEqual(json, "[false,123458,\"\"123458\"\",\"君の日本語は上手です\"]")
+//        XCTAssertEqual(json, "[false,123458,\"\\\"123458\\\"\",\"君の日本語は上手です\"]")
+        XCTAssertEqual(json, #"[false,123458,"\"123458\"","君の日本語は上手です"]"#)
     }
 
     func testEmptyObject() {
@@ -162,7 +192,7 @@ final class JSONStreamTests: XCTestCase {
     func testObject() {
         let json = write { stream in
             stream.beginObject()
-            stream.write(key: "bool", true)
+            stream.keyed("bool", value: true)
             stream.endObject()
         }
         XCTAssertEqual(json, "{\"bool\":true}")
@@ -172,8 +202,8 @@ final class JSONStreamTests: XCTestCase {
         let json = write { stream in
             stream.beginObject()
             // NOTE: JSONStream write keys as-is, no uniqueness check.
-            stream.write(key: "bool", true)
-            stream.write(key: "bool", false)
+            stream.keyed("bool", value: true)
+            stream.keyed("bool", value: false)
             stream.endObject()
         }
         XCTAssertEqual(json, "{\"bool\":true,\"bool\":false}")
@@ -182,10 +212,10 @@ final class JSONStreamTests: XCTestCase {
     func testObject3() {
         let json = write { stream in
             stream.beginObject()
-            stream.write(key: "bool", true)
-            stream.write(key: "foo", "bar")
-            stream.write(key: "int", 9393)
-            stream.write(key: "jp", "君の日本語は上手です")
+            stream.keyed("bool", value: true)
+            stream.keyed("foo", value: "bar")
+            stream.keyed("int", value: 9393)
+            stream.keyed("jp", value: "君の日本語は上手です")
             stream.endObject()
         }
         XCTAssertEqual(json,
@@ -194,15 +224,15 @@ final class JSONStreamTests: XCTestCase {
 
     func testEmptyObjectClosure() {
         let json = write { stream in
-            stream.writeObject { _ in }
+            stream.object { _ in }
         }
         XCTAssertEqual(json, "{}")
     }
 
     func testObjectClosure() {
         let json = write { stream in
-            stream.writeObject { target in
-                target.write(key: "bool", true)
+            stream.object { target in
+                target.keyed("bool", value: true)
             }
         }
         XCTAssertEqual(json, "{\"bool\":true}")
@@ -210,10 +240,10 @@ final class JSONStreamTests: XCTestCase {
 
     func testObjectClosure2() {
         let json = write { stream in
-            stream.writeObject { target in
+            stream.object { target in
                 // NOTE: JSONStream write keys as-is, no uniqueness check.
-                target.write(key: "bool", true)
-                target.write(key: "bool", false)
+                target.keyed("bool", value: true)
+                target.keyed("bool", value: false)
             }
         }
         XCTAssertEqual(json, "{\"bool\":true,\"bool\":false}")
@@ -221,11 +251,11 @@ final class JSONStreamTests: XCTestCase {
 
     func testObjectClosure3() {
         let json = write { stream in
-            stream.writeObject { target in
-                target.write(key: "bool", true)
-                target.write(key: "foo", "bar")
-                target.write(key: "int", 9393)
-                target.write(key: "jp", "君の日本語は上手です")
+            stream.object { target in
+                target.keyed("bool", value: true)
+                target.keyed("foo", value: "bar")
+                target.keyed("int", value: 9393)
+                target.keyed("jp", value: "君の日本語は上手です")
             }
         }
         XCTAssertEqual(json,
@@ -235,12 +265,12 @@ final class JSONStreamTests: XCTestCase {
     func testArrayInArray() {
         let json = write { stream in
             stream.beginArray()
-            stream.write("array")
+            stream.value("array")
             stream.beginArray()
-            stream.write(true)
-            stream.write(false)
+            stream.value(true)
+            stream.value(false)
             stream.endArray()
-            stream.write("array2")
+            stream.value("array2")
             stream.endArray()
         }
         XCTAssertEqual(json, #"["array",[true,false],"array2"]"#)
@@ -249,10 +279,10 @@ final class JSONStreamTests: XCTestCase {
     func testArrayInObject() {
         let json = write { stream in
             stream.beginObject()
-            stream.write(key: "array")
+            stream.key("array")
             stream.beginArray()
-            stream.write(true)
-            stream.write(false)
+            stream.value(true)
+            stream.value(false)
             stream.endArray()
             stream.endObject()
         }
@@ -262,17 +292,17 @@ final class JSONStreamTests: XCTestCase {
     func testArraysInObject() {
         let json = write { stream in
             stream.beginObject()
-            stream.write(key: "array")
+            stream.key("array")
             stream.beginArray()
-            stream.write(true)
-            stream.write(false)
+            stream.value(true)
+            stream.value(false)
             stream.endArray()
 
-            stream.write(key: "array2")
+            stream.key("array2")
             stream.beginArray()
             stream.endArray()
 
-            stream.write(key: "100", 200)
+            stream.keyed("100", value: 200)
             stream.endObject()
         }
         XCTAssertEqual(json, #"{"array":[true,false],"array2":[],"100":200}"#)
@@ -281,10 +311,10 @@ final class JSONStreamTests: XCTestCase {
     func testObjectInObject() {
         let json = write { stream in
             stream.beginObject()
-            stream.write(key: "object")
+            stream.key("object")
             stream.beginObject()
-            stream.write(key: "bool", true)
-            stream.write(key: "int", 100)
+            stream.keyed("bool", value: true)
+            stream.keyed("int", value: 100)
             stream.endObject()
             stream.endObject()
         }
@@ -295,8 +325,8 @@ final class JSONStreamTests: XCTestCase {
         let json = write { stream in
             stream.beginArray()
             stream.beginObject()
-            stream.write(key: "bool", true)
-            stream.write(key: "int", 100)
+            stream.keyed("bool", value: true)
+            stream.keyed("int", value: 100)
             stream.endObject()
             stream.endArray()
         }
@@ -307,21 +337,99 @@ final class JSONStreamTests: XCTestCase {
         let json = write { stream in
             stream.beginArray()
             stream.beginObject()
-            stream.write(key: "bool", true)
-            stream.write(key: "int", 100)
+            stream.keyed("bool", value: true)
+            stream.keyed("int", value: 100)
             stream.endObject()
 
             stream.beginObject()
-            stream.write(key: "bool", false)
-            stream.write(key: "int", 200)
+            stream.keyed("bool", value: false)
+            stream.keyed("int", value: 200)
             stream.endObject()
 
             stream.beginObject()
             stream.endObject()
 
-            stream.write(999)
+            stream.value(999)
             stream.endArray()
         }
         XCTAssertEqual(json, #"[{"bool":true,"int":100},{"bool":false,"int":200},{},999]"#)
+    }
+
+    func testEncodableSingleValue() {
+        let string = write { stream in
+            _ = stream.encodable("Foobar")
+        }
+        XCTAssertEqual(string, "\"Foobar\"")
+        let int = write { stream in
+            _ = stream.encodable(887 as Int)
+        }
+        XCTAssertEqual(int, "887")
+        let int32 = write { stream in
+            _ = stream.encodable(-2147483648 as Int32) // Int32.min
+        }
+        XCTAssertEqual(int32, "-2147483648")
+        let int64 = write { stream in
+            _ = stream.encodable(2147483648 as Int64) // Int32.max + 1
+        }
+        XCTAssertEqual(int64, "2147483648")
+        let uint = write { stream in
+            _ = stream.encodable(44334 as UInt)
+        }
+        XCTAssertEqual(uint, "44334")
+        let uint32 = write { stream in
+            _ = stream.encodable(UInt32.max)
+        }
+        XCTAssertEqual(uint32, "4294967295")
+        // FIXME: Unstable double encoding
+        // let double = write { stream in
+        //     _ = stream.encodable(Double.pi)
+        // }
+        // XCTAssertEqual(double, "3.141592653589793")
+        // FIXME: Unstable float encoding
+        // let float = write { stream in
+        //      _ = stream.encodable(Float.pi)
+        // }
+        // XCTAssertEqual(float, "3.1415925")
+        let truly = write { stream in
+            _ = stream.encodable(true)
+        }
+        XCTAssertEqual(truly, "true")
+        let falsely = write { stream in
+            _ = stream.encodable(false)
+        }
+        XCTAssertEqual(falsely, "false")
+    }
+
+    func testEncodableEmptyArray() {
+        let json = write { stream in
+            _ = stream.encodable([] as [String])
+        }
+        XCTAssertEqual(json, "[]")
+    }
+
+    func testEncodableArray() {
+        let json = write { stream in
+            _ = stream.encodable([false])
+        }
+        XCTAssertEqual(json, "[false]")
+    }
+
+    func testEncodableArray2() {
+        let json = write { stream in
+            _ = stream.encodable([false, true])
+        }
+        XCTAssertEqual(json, "[false,true]")
+    }
+
+    func testEncodableArray3() {
+        let json = write { stream in
+            _ = stream.encodable([
+                "false",
+                "123458.",
+                "\"123458\"",
+                "君の日本語は上手です"
+            ])
+        }
+        XCTAssertEqual(json, #"["false","123458.","\"123458\"","君の日本語は上手です"]"#)
     }
 }

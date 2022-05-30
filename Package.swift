@@ -32,6 +32,9 @@ let package = Package(
             name: "JSONCore",
             dependencies: [
                 .product(name: "CoreCxx", package: "CoreSwift"),
+            ],
+            exclude: [
+                "CMakeLists.txt",
             ]),
         .target(
             name: "JSONSimd",
@@ -61,7 +64,10 @@ let package = Package(
             ]),
         .testTarget(
             name: "JSONKitTests",
-            dependencies: ["JSONKit"]),
+            dependencies: ["JSONKit"],
+            exclude: [
+                "JSONStreamTests+Write.swift.gyb",
+            ]),
         .testTarget(
             name: "AnyNotationKitTests",
             dependencies: [

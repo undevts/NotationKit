@@ -54,22 +54,44 @@ private func writeLog(_ message: String, condition: () -> Bool) {
 }
 #endif
 
+@frozen
+@usableFromInline
+enum Symbol: UInt8 {
+    /// ,
+    case comma = 0x2C
+    /// :
+    case colon = 0x3A
+    /// {
+    case leftBracket = 0x7B
+    /// }
+    case rightBracket = 0x7D
+    /// [
+    case leftSquare = 0x5B
+    /// ]
+    case rightSquare = 0x5D
+    /// "
+    case quotation = 0x22
+}
+
 public struct JSONStream {
     @usableFromInline
-    enum State {
-        case array, object, key, value
-    }
-
+    var data: Data
     @usableFromInline
-    private(set) var data = Data()
-    private var root: State?
-    private var scope: State?
-    private var states: [State] = []
+    var stack: [Level]
+    @usableFromInline
+    var hasRoot: Bool
     public let formatting: JSONFormatting
 
-    @_transparent
-    var state: State? {
-        states.last
+    public init(formatting: JSONFormatting = []) {
+        data = Data()
+        stack = []
+        hasRoot = false
+        self.formatting = formatting
+    }
+
+    @inlinable
+    public func finalize() -> Data {
+        data
     }
 
     @_transparent
@@ -78,35 +100,43 @@ public struct JSONStream {
         formatting.contains(.writeNull)
     }
 
-    public init(formatting: JSONFormatting = []) {
-        self.formatting = formatting
-    }
-
-    public func finalize() -> Data {
-//        precondition(states.isEmpty || state == State.value,
-//            "JSON value not closed.")
-        return data
+    @usableFromInline
+    var inObjectValue: Bool {
+        let level = last
+        return !level.inArray && (level.count % 2 == 1)
     }
 
     @_transparent
-    private func valueCheck() {
+    var last: Level {
+        stack.last ?? Level(count: 0, inArray: false)
+    }
+
+    @_transparent
+    mutating func popLast() -> Level {
+        stack.popLast() ?? Level(count: 0, inArray: false)
+    }
+
+//    @_transparent
+//    @usableFromInline
+//    mutating func put(byte value: UInt8) {
+//        data.append(value)
+//    }
+
+    @_transparent
+    @usableFromInline
+    mutating func put(symbol: Symbol) {
+        data.append(symbol.rawValue)
     }
 
     @_transparent
     @usableFromInline
-    mutating func write(byte value: UInt8) {
-        data.append(value)
-    }
-
-    @_transparent
-    @usableFromInline
-    mutating func write(bytes value: [UInt8]) {
+    mutating func put(bytes value: [UInt8]) {
         data.append(contentsOf: value)
     }
 
     @_transparent
     @usableFromInline
-    mutating func write(bytes value: UnsafePointer<UInt8>, count: Int) {
+    mutating func put(bytes value: UnsafePointer<UInt8>, count: Int) {
         if count < 1 {
             return
         }
@@ -117,13 +147,13 @@ public struct JSONStream {
 
     @_transparent
     @usableFromInline
-    mutating func write(bytes value: UnsafePointer<Int8>, count: Int) {
-        write(bytes: UnsafeRawPointer(value).assumingMemoryBound(to: UInt8.self), count: count)
+    mutating func put(bytes value: UnsafePointer<Int8>, count: Int) {
+        put(bytes: UnsafeRawPointer(value).assumingMemoryBound(to: UInt8.self), count: count)
     }
 
     @inlinable
     @inline(__always)
-    mutating func write(raw value: String) {
+    mutating func put(unsafe value: String) {
         let success = value.utf8.withContiguousStorageIfAvailable { (pointer: UnsafeBufferPointer<UInt8>) -> Bool in
             if pointer.count < 1 {
                 return true
@@ -131,212 +161,404 @@ public struct JSONStream {
             guard let base = pointer.baseAddress else {
                 return false
             }
-            write(bytes: base, count: pointer.count)
+            put(bytes: base, count: pointer.count)
             return true
         }
-        if success == true {
+        if _fastPath(success == true) {
             return
         }
         value.withCString { pointer in
-            write(bytes: pointer, count: strlen(pointer))
+            put(bytes: pointer, count: strlen(pointer))
         }
     }
 
-    @inline(__always)
     @usableFromInline
-    mutating func writeComma() {
-        write(byte: 0x2C) // ,
-    }
-
-    @inline(__always)
-    @usableFromInline
-    mutating func writeColon() {
-        write(byte: 0x3A) //
-    }
-
-    @usableFromInline
-    mutating func writeValue(_ value: String) {
-        pushValueState()
-        write(raw: value)
-    }
-
-    @usableFromInline
-    mutating func writeKey(_ value: String) {
-        switch state {
-        case .array, .none:
-            writeLog("Unexpected JSON.Key")
-        case .value:
-            writeLog("Expect JSON.Object") { scope != .object }
-            _ = states.popLast()
-            states.append(.key)
-            writeComma()
-        case .object:
-            states.append(.key)
-        case .key:
-            writeLog("Unexpected JSON.Key")
+    mutating func prefix(type: JSONType) {
+        if _fastPath(!stack.isEmpty) { // this value is not at root
+            let last: Level = popLast()
+            if last.count > 0 {
+                if last.inArray {
+                    // add comma if it is not the first element in array
+                    put(symbol: .comma)
+                } else {
+                    // in object
+                    put(symbol: (last.count % 2 == 0) ? .comma : .colon)
+                }
+            }
+            if !last.inArray && (last.count % 2 == 0) {
+                // if it's in object, then even number should be a name
+                assert(type == .string)
+            }
+            stack.append(Level(count: last.count + 1, inArray: last.inArray))
+        } else {
+            assert(!hasRoot)
+            hasRoot = true
         }
-        write(byte: 0x22) // "
-        write(raw: value)
-        write(byte: 0x22) // "
     }
 
-    @inline(__always)
     @usableFromInline
-    mutating func pushValueState() {
-        root = root ?? .value
-        switch state {
-        case .array, .none:
-            states.append(.value)
-        case .value:
-            writeLog("Unexpected JSON.Value") { scope != .array }
-            writeComma()
-        case .object:
-            writeLog("Expect JSON.Key")
-        case .key:
-            writeLog("Unexpected JSON.Value") { scope != .object }
-            writeColon()
-            _ = states.popLast()
-            states.append(.value)
+    mutating func suffix() {
+        if _slowPath(stack.isEmpty) {
+
         }
+    }
+
+    @usableFromInline
+    struct Level {
+        let count: Int
+        let inArray: Bool
     }
 }
 
 extension JSONStream {
-    // MARK: - JSON Value
+    @inlinable
+    @inline(__always)
+    mutating func _writeNull() {
+        data.reserveCapacity(4)
+        put(bytes: [0x6e, 0x75, 0x6c, 0x6c]) // n u l l
+    }
 
     @inlinable
-    public mutating func writeNull() {
-        write(bytes: [0x6e, 0x75, 0x6c, 0x6c]) // n u l l
-    }
-
-    // MARK: - JSON Array
-
-    public mutating func beginArray() {
-        root = root ?? .array
-        switch state {
-        case .array, .none: // Empty array or Empty root
-            states.append(.array)
-        case .value:
-            writeLog("Root is a JSON.Value, 'beginArray' will leads error.") {
-                root == .value
-            }
-            writeLog("Expect JSON.Key") { scope == .object }
-            _ = states.popLast()
-            states.append(.array)
-            writeComma()
-        case .object:
-            writeLog("Expect JSON.Key")
-        case .key:
-            _ = states.popLast()
-            states.append(.array)
-            writeColon()
+    @inline(__always)
+    mutating func _writeBool(_ value: Bool) {
+        if value {
+            data.reserveCapacity(4)
+            put(bytes: [0x74, 0x72, 0x75, 0x65]) // t r u e
+        } else {
+            data.reserveCapacity(5)
+            put(bytes: [0x66, 0x61, 0x6c, 0x73, 0x65]) // f a l s e
         }
-        scope = .array
-        write(byte: 0x5B) // [
     }
-
-    public mutating func endArray() {
-        switch state {
-        case .none, .key, .object:
-            writeLog("Unexpected 'endArray'")
-        case .value:
-            writeLog("Unexpected 'endArray'") { scope == .object }
-            _ = states.popLast()
-            writeLog("Expect JSON.Array") { scope != .array }
-            _ = states.popLast()
-            scope = state
-            if !states.isEmpty {
-                states.append(.value)
-            }
-        case .array: // Empty array
-            _ = states.popLast()
-            scope = state
-            if !states.isEmpty {
-                states.append(.value)
-            }
-        }
-        write(byte: 0x5D) // ]
-    }
-
-    public mutating func writeArray(_ body: (inout JSONStream) -> Void) {
-        beginArray()
-        body(&self)
-        endArray()
-    }
-
-    // MARK: - JSON Object
 
     @inlinable
-    public mutating func write(key: String) {
-        writeKey(key)
+    @inline(__always)
+    mutating func _writeInt32(_ value: Int32) {
+        var buffer = json_number_32()
+        let size = json_write_int32(&buffer, value)
+        buffer.write(to: &data, size: size)
     }
 
+    @inlinable
+    @inline(__always)
+    mutating func _writeUInt32(_ value: UInt32) {
+        var buffer = json_number_32()
+        let size = json_write_uint32(&buffer, value)
+        buffer.write(to: &data, size: size)
+    }
+
+    @inlinable
+    @inline(__always)
+    mutating func _writeInt64(_ value: Int64) {
+        var buffer = json_number_64()
+        let size = json_write_int64(&buffer, value)
+        buffer.write(to: &data, size: size)
+    }
+
+    @inlinable
+    @inline(__always)
+    mutating func _writeUInt64(_ value: UInt64) {
+        var buffer = json_number_64()
+        let size = json_write_uint64(&buffer, value)
+        buffer.write(to: &data, size: size)
+    }
+
+    @inlinable
+    @inline(__always)
+    mutating func _writeDouble(_ value: Double) {
+        put(unsafe: String(value))
+    }
+
+    @inlinable
+    @inline(__always)
+    mutating func _writeFloat(_ value: Float) {
+        put(unsafe: String(value))
+    }
+
+    @inlinable
+    @inline(__always)
+    mutating func _writeString(_ value: String) {
+        if value.isEmpty {
+            put(symbol: .quotation)
+            put(symbol: .quotation)
+            return
+        }
+        let success = value.utf8.withContiguousStorageIfAvailable { (pointer: UnsafeBufferPointer<UInt8>) -> Bool in
+            guard let base = pointer.baseAddress else {
+                return false
+            }
+            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 2 + value.utf8.count * 6) // "\uxxxx...")
+            let size = json_write_string(buffer, base, pointer.count)
+            put(bytes: buffer, count: size)
+            buffer.deallocate()
+            return true
+        }
+        if _fastPath(success == true) {
+            return
+        }
+        value.withCString { pointer in
+            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 2 + value.utf8.count * 6) // "\uxxxx...")
+            let size = json_write_string(buffer, pointer, strlen(pointer))
+            put(bytes: buffer, count: size)
+            buffer.deallocate()
+        }
+    }
+    
+    @inline(__always)
+    mutating func _beginObject() {
+        put(symbol: .leftBracket)
+    }
+    
+    @inline(__always)
+    mutating func _endObject() {
+        put(symbol: .rightBracket)
+    }
+    
+    @inline(__always)
+    mutating func _beginArray() {
+        put(symbol: .leftSquare)
+    }
+    
+    @inline(__always)
+    mutating func _endArray() {
+        put(symbol: .rightSquare)
+    }
+}
+
+extension JSONStream {
+    @inlinable
+    public mutating func null() {
+        prefix(type: .null)
+        _writeNull()
+        suffix()
+    }
+
+    @inlinable
+    public mutating func value(_ value: Bool) {
+        prefix(type: .null)
+        _writeBool(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func value(_ value: Int) {
+#if arch(x86_64) || arch(arm64)
+        self.value(Int64(value))
+#else
+        self.value(Int32(value))
+#endif
+    }
+
+    @inlinable
+    public mutating func value(_ value: UInt) {
+#if arch(x86_64) || arch(arm64)
+        self.value(UInt64(value))
+#else
+        self.value(UInt32(value))
+#endif
+    }
+
+    @inlinable
+    public mutating func value(_ value: Int32) {
+        prefix(type: .null)
+        _writeInt32(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func value(_ value: UInt32) {
+        prefix(type: .null)
+        _writeUInt32(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func value(_ value: Int64) {
+        prefix(type: .null)
+        _writeInt64(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func value(_ value: UInt64) {
+        prefix(type: .null)
+        _writeUInt64(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func value(_ value: Double) {
+        prefix(type: .null)
+        _writeDouble(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func value(_ value: Float) {
+        prefix(type: .null)
+        _writeFloat(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func value(_ value: String) {
+        prefix(type: .string)
+        _writeString(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func key(_ value: String) {
+        // Same as `string`
+        prefix(type: .string)
+        _writeString(value)
+        suffix()
+    }
+
+    @inlinable
+    public mutating func key<K>(_ value: K) where K: CodingKey {
+        // Same as `string`
+        prefix(type: .string)
+        _writeString(value.stringValue)
+        suffix()
+    }
+}
+
+// MARK: JSON x Encodable
+
+extension JSONStream {
+    @inlinable
+    public mutating func encodable<T>(_ value: T, encoder: JSONEncoder? = nil) -> Result<Void, Error>
+        where T: Encodable {
+        let encoder = encoder ?? JSONEncoder()
+        let data: Data
+        do {
+            data = try encoder.encode(value)
+        } catch {
+            return .failure(error)
+        }
+        switch data.first {
+        case Symbol.leftSquare.rawValue:
+            prefix(type: .array)
+        case Symbol.leftBracket.rawValue:
+            prefix(type: .object)
+        case .none:
+            fallthrough
+        default:
+            prefix(type: .null)
+        }
+        self.data.append(data)
+        suffix()
+        return .success(())
+    }
+
+    @inlinable
+    public mutating func encodable<T>(_ value: T, key: String, encoder: JSONEncoder? = nil) -> Result<Void, Error>
+        where T: Encodable {
+        self.key(key)
+        return encodable(value, encoder: encoder)
+    }
+}
+
+extension JSONStream {
     public mutating func beginObject() {
-        root = root ?? .object
-        switch state {
-        case .array, .none:
-            states.append(.object)
-        case .value:
-            writeLog("Root is a JSON.Value, 'beginObject' will leads error.") {
-                root == .value
-            }
-            writeLog("Expect JSON.Key") { scope == .object }
-            _ = states.popLast()
-            states.append(.object)
-            writeComma()
-        case .object:
-            writeLog("Expect JSON.Key")
-        case .key:
-            _ = states.popLast()
-            states.append(.object)
-            writeColon()
-        }
-        scope = .object
-        write(byte: 0x7B) // {
+        prefix(type: .object)
+        stack.append(Level(count: 0, inArray: false))
+        _beginObject()
     }
 
     public mutating func endObject() {
-        switch state {
-        case .none, .key, .array:
-            writeLog("Unexpected 'endObject'")
-        case .value:
-            writeLog("Unexpected 'endObject'") { scope == .array }
-            _ = states.popLast()
-            writeLog("Expect JSON.Object") { scope != .object }
-            _ = states.popLast()
-            scope = state
-            if !states.isEmpty {
-                states.append(.value)
-            }
-        case .object: // Empty object
-            _ = states.popLast()
-            scope = state
-            if !states.isEmpty {
-                states.append(.value)
-            }
-        }
-        write(byte: 0x7D) // }
+        assert(!stack.isEmpty)
+        assert(!last.inArray, "Currently inside an Array, not Object.")
+        assert((last.count % 2) == 0, "Object has a Key without a Value.")
+        _ = popLast()
+        _endObject()
+        suffix()
     }
 
-    public mutating func writeObject(_ body: (inout JSONStream) -> Void) {
+    public mutating func object(_ body: (inout JSONStream) -> Void) {
         beginObject()
         body(&self)
         endObject()
     }
 
-    // MARK: JSON x Encodable
-
-    @inlinable
-    public mutating func write<T>(encodable value: T, encoder: JSONEncoder? = nil) throws where T: Encodable {
-        let encoder = encoder ?? JSONEncoder()
-        let data = try encoder.encode(value)
-        self.data.append(data)
+    public mutating func beginArray() {
+        prefix(type: .object)
+        stack.append(Level(count: 0, inArray: true))
+        _beginArray()
     }
 
+    public mutating func endArray() {
+        assert(!stack.isEmpty)
+        assert(last.inArray, "Currently inside an Object, not Array.")
+        _ = popLast()
+        _endArray()
+        suffix()
+    }
+
+    public mutating func array(_ body: (inout JSONStream) -> Void) {
+        beginArray()
+        body(&self)
+        endArray()
+    }
+}
+
+extension JSONStream {
+    @inlinable
+    @available(*, unavailable, renamed: "null(_:)")
+    public mutating func writeNull() {
+        null()
+    }
+
+    @inlinable
+    @available(*, unavailable, renamed: "key(_:)")
+    public mutating func write(key value: String) {
+        self.key(value)
+    }
+
+    @available(*, unavailable, renamed: "object(_:)")
+    public mutating func writeObject(_ body: (inout JSONStream) -> Void) {
+        object(body)
+    }
+
+    @available(*, unavailable, renamed: "array(_:)")
+    public mutating func writeArray(_ body: (inout JSONStream) -> Void) {
+        array(body)
+    }
+
+    @inlinable
+    @available(*, unavailable, message: "Please use encodable(_:encoder:)")
+    public mutating func write<T>(encodable value: T, encoder: JSONEncoder? = nil) throws where T: Encodable {
+        try encodable(value, encoder: encoder).get()
+    }
+
+    @inlinable
+    @available(*, unavailable, message: "Please use encodable(_:key:encoder:)")
     public mutating func write<T>(encodable value: T, key: String, encoder: JSONEncoder? = nil) throws
         where T: Encodable {
-        writeKey(key)
-        writeComma()
-        try write(encodable: value, encoder: encoder)
+        try encodable(value, key: key, encoder: encoder).get()
+    }
+}
+
+extension json_number_32 {
+    @inlinable
+    @inline(__always)
+    mutating func write(to data: inout Data, size: Int) {
+        data.reserveCapacity(size)
+        withUnsafePointer(to: &self) { (pointer: UnsafePointer<json_number_32>) -> Void in
+            let p = UnsafeRawPointer(pointer).assumingMemoryBound(to: UInt8.self)
+            data.append(p, count: size)
+        }
+    }
+}
+
+extension json_number_64 {
+    @inlinable
+    @inline(__always)
+    mutating func write(to data: inout Data, size: Int) {
+        data.reserveCapacity(size)
+        withUnsafePointer(to: &self) { (pointer: UnsafePointer<json_number_64>) -> Void in
+            let p = UnsafeRawPointer(pointer).assumingMemoryBound(to: UInt8.self)
+            data.append(p, count: size)
+        }
     }
 }

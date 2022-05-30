@@ -80,21 +80,21 @@ extension JSON: JSONEncodable {
         case .object:
             stream.beginObject()
             for (key, value) in dictionary {
-                stream.write(key: key, value)
+                stream.keyed(key, value: value)
             }
             stream.endObject()
         case .int64:
-            stream.write(int64)
+            stream.value(int64)
         case .uint64:
-            stream.write(uint64)
+            stream.value(uint64)
         case .double:
-            stream.write(double)
+            stream.value(double)
         case .string:
-            stream.write(string)
+            stream.value(string)
         case .bool:
-            stream.write(bool)
+            stream.value(bool)
         case .null:
-            stream.writeNull()
+            stream.null()
         }
     }
 }

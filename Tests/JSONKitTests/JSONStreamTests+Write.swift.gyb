@@ -1,0 +1,139 @@
+// MIT License
+//
+// Copyright (c) 2022 Notation Kit Project Authors
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+%{
+keys = ['Int', 'Int32', 'Int64', 'UInt', 'UInt32', 'UInt64', 'Double', 'Float']
+types = {
+'Int': 'int', 'Int32': 'int32', 'Int64': 'int64',
+'UInt': 'uint', 'UInt32': 'uint32', 'UInt64': 'uint64',
+'Double': 'double', 'Float': 'float'
+}
+}%
+
+import XCTest
+@testable import JSONKit
+
+extension JSONStreamTests {
+% for type in keys:
+%   value = types[type]
+    func testWrite${type}() {
+% if type == 'Double' or type == 'Float':
+        check(expected: "\(${type}.zero)") { stream in
+            stream.value(${type}.zero)
+        }
+        check(expected: "\(${type}.pi)") { stream in
+            stream.value(${type}.pi)
+        }
+% else:
+        check(expected: "\(${type}.min)") { stream in
+            stream.value(${type}.min)
+        } encodable: { stream in
+            _ = stream.encodable(${type}.min)
+        }
+        check(expected: "\(${type}.max)") { stream in
+            stream.value(${type}.max)
+        } encodable: { stream in
+            _ = stream.encodable(${type}.max)
+        }
+% end
+        check(expected: "") { stream in
+            stream.optional(nil as ${type}?)
+        }
+        check(expected: "null", null: true) { stream in
+            stream.optional(nil as ${type}?)
+        } encodable: { stream in
+            _ = stream.encodable(nil as ${type}?)
+        }
+        check(expected: #"{}"#) { stream in
+            stream.beginObject()
+            stream.keyed("v", optional: nil as ${type}?)
+            stream.endObject()
+        }
+        check(expected: #"{"v":null}"#, null: true) { stream in
+            stream.beginObject()
+            stream.keyed("v", optional: nil as ${type}?)
+            stream.endObject()
+        } encodable: { stream in
+            stream.beginObject()
+            _ = stream.encodable(nil as ${type}?, key: "v")
+            stream.endObject()
+        }
+        check(expected: #"{"v":null}"#) { stream in
+            stream.beginObject()
+            stream.key("v")
+            stream.optional(nil as ${type}?)
+            stream.endObject()
+        }
+        check(expected: #"{"v":null}"#, null: true) { stream in
+            stream.beginObject()
+            stream.key("v")
+            stream.optional(nil as ${type}?)
+            stream.endObject()
+        }
+        check(expected: #"{"v":null}"#) { stream in
+            stream.beginObject()
+            stream.key(AnyCodingKey.keyed("v"))
+            stream.optional(nil as ${type}?)
+            stream.endObject()
+        }
+        check(expected: #"{"v":null}"#, null: true) { stream in
+            stream.beginObject()
+            stream.keyed(AnyCodingKey.keyed("v"), optional: nil as ${type}?)
+            stream.endObject()
+        }
+% if type == 'Double' or type == 'Float':
+        check(expected: "[\(${type}.zero)]") { stream in
+            stream.beginArray()
+            stream.value(${type}.zero)
+            stream.endArray()
+        }
+        check(expected: "[\(${type}.pi)]") { stream in
+            stream.beginArray()
+            stream.value(${type}.pi)
+            stream.endArray()
+        }
+% else:
+        check(expected: "[\(${type}.min)]") { stream in
+            stream.beginArray()
+            stream.optional(${type}.min)
+            stream.endArray()
+        }
+        check(expected: "[\(${type}.max)]") { stream in
+            stream.beginArray()
+            stream.optional(${type}.max)
+            stream.endArray()
+        }
+% end
+        check(expected: "[]") { stream in
+            stream.beginArray()
+            stream.optional(nil as ${type}?)
+            stream.endArray()
+        }
+        check(expected: "[null]", null: true) { stream in
+            stream.beginArray()
+            stream.optional(nil as ${type}?)
+            stream.endArray()
+        }
+    }
+
+% end
+}

@@ -53,7 +53,7 @@ extension Dictionary: JSONEncodable where Key == String, Value: JSONEncodable {
     public func encode(to stream: inout JSONStream) {
         stream.beginObject()
         for (key, value) in self {
-            stream.write(key: key, value)
+            stream.keyed(key, value: value)
         }
         stream.endObject()
     }

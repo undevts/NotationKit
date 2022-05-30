@@ -23,17 +23,21 @@
 import XCTest
 @testable import JSONKit
 
-struct Foobar: JSONEncodable {
+struct Foobar: JSONEncodable, Codable {
     var x = 12
     var y = false
     var z = "Foobar"
 
     func encode(to stream: inout JSONStream) {
         stream.beginObject()
-        stream.write(key: "x", x)
-        stream.write(key: "y", y)
-        stream.write(key: "z", z)
+        stream.keyed("x", value: x)
+        stream.keyed("y", value: y)
+        stream.keyed("z", value: z)
         stream.endObject()
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case x, y, z
     }
 }
 
@@ -50,9 +54,9 @@ struct Browser: JSONCodable, Codable {
 
     func encode(to stream: inout JSONStream) {
         stream.beginObject()
-        stream.write(key: CodingKeys.name, name)
-        stream.write(key: CodingKeys.perfUrl, perfUrl)
-        stream.write(key: CodingKeys.releases, releases)
+        stream.keyed(CodingKeys.name, value: name)
+        stream.keyed(CodingKeys.perfUrl, value: perfUrl)
+        stream.keyed(CodingKeys.releases, value: releases)
         stream.endObject()
     }
 
@@ -78,10 +82,10 @@ struct Release: JSONCodable, Codable {
 
     func encode(to stream: inout JSONStream) {
         stream.beginObject()
-        stream.write(key: "release_date", date)
-        stream.write(key: "status", status)
-        stream.write(key: "engine", engine)
-        stream.write(key: "engine_version", engineVersion)
+        stream.keyed("release_date", value: date)
+        stream.keyed("status", value: status)
+        stream.keyed("engine", value: engine)
+        stream.keyed("engine_version", value: engineVersion)
         stream.endObject()
     }
 }

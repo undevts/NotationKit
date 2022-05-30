@@ -22,105 +22,164 @@
 
 %{
 keys = ['Int', 'Int32', 'Int64', 'UInt', 'UInt32', 'UInt64', 'Double', 'Float', 'Bool', 'String', 'T']
+types = {
+'Int': 'int', 'Int32': 'int32', 'Int64': 'int64',
+'UInt': 'uint', 'UInt32': 'uint32', 'UInt64': 'uint64',
+'Double': 'double', 'Float': 'float', 'Bool': 'bool',
+'String': 'string', 'T': 't'
+}
 }%
 extension JSONStream {
 % for type in keys:
+%   value = types[type]
     @inlinable
 % if type == "T":
     public mutating func write<T>(_ value: T) where T: JSONEncodable {
 % else:
+    @available(*, unavailable, renamed: "value(_:)")
     public mutating func write(_ value: ${type}) {
 % end
-% if type == "String":
-        pushValueState()
-        write(byte: 0x22) // "
-        write(raw: value)
-        write(byte: 0x22) // "
-% elif type == "T":
+% if type == "T":
         value.encode(to: &self)
 % else:
-        writeValue(String(value))
+        self.value(value)
 % end
     }
 
     @inlinable
+% if type == "T":
+    public mutating func optional<T>(_ value: T?) where T: JSONEncodable {
+% else:
+    public mutating func optional(_ value: ${type}?) {
+% end
+        if let value = value {
+% if type == "T":
+            value.encode(to: &self)
+% else:
+            self.value(value)
+% end
+        } else if inObjectValue || useNull {
+            null()
+        }
+    }
+
+    @inlinable
+    @available(*, unavailable, renamed: "optional(_:)")
 % if type == "T":
     public mutating func write<T>(optional value: T?) where T: JSONEncodable {
 % else:
     public mutating func write(optional value: ${type}?) {
 % end
-        if let value = value {
-% if type == "String":
-            pushValueState()
-            write(byte: 0x22) // "
-            write(raw: value)
-            write(byte: 0x22) // "
-% elif type == "T":
-            value.encode(to: &self)
-% else:
-            writeValue(String(value))
-% end
-        } else if useNull {
-            writeNull()
-        }
+        optional(value)
     }
 
     @inlinable
+% if type == "T":
+    public mutating func keyed<T>(_ key: String, value: T) where T: JSONEncodable {
+% else:
+    public mutating func keyed(_ key: String, value: ${type}) {
+% end
+        self.key(key)
+% if type == "T":
+        value.encode(to: &self)
+% else:
+        self.value(value)
+% end
+    }
+
+    @inlinable
+    @available(*, unavailable, renamed: "keyed(_:value:)")
 % if type == "T":
     public mutating func write<T>(key: String, _ value: T) where T: JSONEncodable {
 % else:
     public mutating func write(key: String, _ value: ${type}) {
 % end
-        writeKey(key)
-% if type == "String":
-        write(value)
-% elif type == "T":
-        value.encode(to: &self)
-% else:
-        writeValue(String(value))
-% end
+        keyed(key, value: value)
     }
 
     @inlinable
+% if type == "T":
+    public mutating func keyed<T>(_ key: String, optional value: T?) where T: JSONEncodable {
+% else:
+    public mutating func keyed(_ key: String, optional value: ${type}?) {
+% end
+        guard value != nil || useNull else {
+            return
+        }
+        self.key(key)
+        if let value = value {
+% if type == "T":
+            value.encode(to: &self)
+% else:
+            self.value(value)
+% end
+        } else {
+            null()
+        }
+    }
+
+    @inlinable
+    @available(*, unavailable, renamed: "keyed(_:optional:)")
 % if type == "T":
     public mutating func write<T>(key: String, optional value: T?) where T: JSONEncodable {
 % else:
     public mutating func write(key: String, optional value: ${type}?) {
 % end
-        guard value != nil || useNull else {
-            return
-        }
-        writeKey(key)
-        if let value = value {
-% if type == "String":
-            write(value)
-% elif type == "T":
-            value.encode(to: &self)
-% else:
-            writeValue(String(value))
-% end
-        } else {
-            writeNull()
-        }
+        keyed(key, optional: value)
     }
 
     @inlinable
+% if type == "T":
+    public mutating func keyed<Key, T>(_ key: Key, value: T) where Key: CodingKey, T: JSONEncodable {
+% else:
+    public mutating func keyed<Key>(_ key: Key, value: ${type}) where Key: CodingKey {
+% end
+        self.key(key.stringValue)
+% if type == "T":
+        value.encode(to: &self)
+% else:
+        self.value(value)
+% end
+    }
+
+    @inlinable
+    @available(*, unavailable, renamed: "keyed(_:value:)")
 % if type == "T":
     public mutating func write<Key, T>(key: Key, _ value: T) where Key: CodingKey, T: JSONEncodable {
 % else:
     public mutating func write<Key>(key: Key, _ value: ${type}) where Key: CodingKey {
 % end
-        writeKey(key.stringValue)
-% if type == "String":
-        write(value)
-% elif type == "T":
+        self.key(key.stringValue)
+% if type == "T":
         value.encode(to: &self)
 % else:
-        writeValue(String(value))
+        self.value(value)
 % end
     }
 
     @inlinable
+% if type == "T":
+    public mutating func keyed<Key, T>(_ key: Key, optional value: T?) where Key: CodingKey, T: JSONEncodable {
+% else:
+    public mutating func keyed<Key>(_ key: Key, optional value: ${type}?) where Key: CodingKey {
+% end
+        guard value != nil || useNull else {
+            return
+        }
+        self.key(key.stringValue)
+        if let value = value {
+% if type == "T":
+            value.encode(to: &self)
+% else:
+            self.value(value)
+% end
+        } else {
+            null()
+        }
+    }
+
+    @inlinable
+    @available(*, unavailable, renamed: "keyed(_:value:)")
 % if type == "T":
     public mutating func write<Key, T>(key: Key, optional value: T?) where Key: CodingKey, T: JSONEncodable {
 % else:
@@ -129,17 +188,15 @@ extension JSONStream {
         guard value != nil || useNull else {
             return
         }
-        writeKey(key.stringValue)
+        self.key(key.stringValue)
         if let value = value {
-% if type == "String":
-            write(value)
-% elif type == "T":
+% if type == "T":
             value.encode(to: &self)
 % else:
-            writeValue(String(value))
+            self.value(value)
 % end
         } else {
-            writeNull()
+            null()
         }
     }
 

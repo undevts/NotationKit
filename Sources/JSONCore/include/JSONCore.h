@@ -109,6 +109,20 @@ typedef CS_CLOSED_ENUM(NSUInteger, JSONParseErrorCode) {
     JSONParseErrorCodeOutOfBounds, // 29
 };
 
+typedef struct {
+    uint8_t buffer[11];
+} json_number_32;
+
+typedef struct {
+    uint8_t buffer[21];
+} json_number_64;
+
+size_t json_write_int32(json_number_32* CS_NONNULL buffer, int32_t value);
+size_t json_write_uint32(json_number_32* CS_NONNULL buffer, uint32_t value);
+size_t json_write_int64(json_number_64* CS_NONNULL buffer, int64_t value);
+size_t json_write_uint64(json_number_64* CS_NONNULL buffer, uint64_t value);
+size_t json_write_string(char* CS_NONNULL buffer, const char* CS_NONNULL value, size_t size);
+
 CS_C_FILE_END
 
 #endif // NOTATION_KIT_JSON_CORE_H
