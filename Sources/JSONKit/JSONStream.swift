@@ -22,6 +22,7 @@
 
 import Foundation
 
+@frozen
 public struct JSONFormatting: OptionSet {
     public let rawValue: UInt8
 
@@ -31,28 +32,6 @@ public struct JSONFormatting: OptionSet {
 
     public static let writeNull =  JSONFormatting(rawValue: 1 << 0)
 }
-
-#if DEBUG
-private func writeLog(_ message: String) {
-    print(message)
-}
-
-private func writeLog(_ message: String, condition: () -> Bool) {
-    if condition() {
-        print(message)
-    }
-}
-#else
-@_transparent
-private func writeLog(_ message: String) {
-    // Do nothing.
-}
-
-@_transparent
-private func writeLog(_ message: String, condition: () -> Bool) {
-    // Do nothing.
-}
-#endif
 
 @frozen
 @usableFromInline
@@ -73,6 +52,7 @@ enum Symbol: UInt8 {
     case quotation = 0x22
 }
 
+@frozen
 public struct JSONStream {
     @usableFromInline
     var data: Data
@@ -196,11 +176,11 @@ public struct JSONStream {
         }
     }
 
+    @_transparent
     @usableFromInline
     mutating func suffix() {
-        if _slowPath(stack.isEmpty) {
-
-        }
+//        if _slowPath(stack.isEmpty) {
+//        }
     }
 
     @usableFromInline
