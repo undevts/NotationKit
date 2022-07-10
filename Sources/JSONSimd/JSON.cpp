@@ -4,6 +4,12 @@
 
 using namespace simdjson;
 
+static_assert(sizeof(dom::array) == sizeof(JSONArray));
+static_assert(sizeof(dom::array::iterator) == sizeof(JSONArrayIterator));
+static_assert(sizeof(dom::object) == sizeof(JSONObject));
+static_assert(sizeof(dom::object::iterator) == sizeof(JSONObjectIterator));
+static_assert(sizeof(dom::element) == sizeof(JSONValue));
+
 template<typename T, std::enable_if_t<std::is_same_v<T, bool>, bool> = true>
 static inline JSONParseErrorCode json_get_number(const dom::element& value, T& out) {
     auto code = value.get_bool().get(out);
@@ -97,7 +103,7 @@ static inline JSONParseErrorCode json_as_number(const dom::element& value, T& ou
 template<typename T>
 static inline T json_get(JSONValueRef ref, JSONParseErrorCode *CS_NULLABLE out) {
     if (UNLIKELY(ref == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     T result{};
     auto code = json_as_number(*unwrap(ref), result);
@@ -213,7 +219,7 @@ bool json_is_number(JSONValueRef ref) {
 
 bool json_get_bool(JSONValueRef ref, JSONParseErrorCode *CS_NULLABLE out) {
     if (UNLIKELY(ref == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     bool result = false;
     auto code = unwrap(ref)->get_bool().get(result);
@@ -295,7 +301,7 @@ char* CS_NULLABLE json_get_string_copy(JSONValueRef ref, size_t* size, JSONParse
 
 JSONParseErrorCode json_get_array(JSONValueRef ref, JSONArrayRef out) {
     if (UNLIKELY(ref == nullptr || out == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     auto array = unwrap(out);
     auto code = unwrap(ref)->get_array().get(*array);
@@ -304,23 +310,82 @@ JSONParseErrorCode json_get_array(JSONValueRef ref, JSONArrayRef out) {
 
 size_t json_array_get_count(JSONArrayRef ref) {
     if (UNLIKELY(ref == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     return unwrap(ref)->size();
 }
 
 JSONParseErrorCode json_array_get(JSONArrayRef ref, size_t index, JSONValueRef out) {
     if (UNLIKELY(ref == nullptr || out == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     auto value = unwrap(out);
     auto code = unwrap(ref)->at(index).get(*value);
     return static_cast<JSONParseErrorCode>(code);
 }
 
+void json_array_get_begin_iterator(JSONArrayRef ref, JSONArrayIteratorRef out) {
+    if (UNLIKELY(ref == nullptr || out == nullptr)) {
+        return;
+    }
+    auto result = unwrap(out);
+    *result = unwrap(ref)->begin();
+}
+
+void json_array_get_end_iterator(JSONArrayRef ref, JSONArrayIteratorRef out) {
+    if (UNLIKELY(ref == nullptr || out == nullptr)) {
+        return;
+    }
+    auto result = unwrap(out);
+    *result = unwrap(ref)->end();
+}
+
+JSONParseErrorCode json_array_iterator_get_value(JSONArrayIteratorRef ref, JSONValueRef out) {
+    if (UNLIKELY(ref == nullptr || out == nullptr)) {
+        return JSONParseErrorCodeUninitialized;
+    }
+    auto value = unwrap(out);
+    const auto& elements = unwrap(ref)->operator*();
+    *value = elements;
+    return JSONParseErrorCodeSuccess;
+}
+
+bool json_array_iterator_is_equal(JSONArrayIteratorRef lhs, JSONArrayIteratorRef rhs) {
+    if (UNLIKELY(lhs == nullptr || rhs == nullptr)) {
+        return false;
+    }
+    return unwrap(lhs)->operator==(*unwrap(rhs));
+}
+
+int json_array_iterator_compare(JSONArrayIteratorRef lhs, JSONArrayIteratorRef rhs) {
+    if (UNLIKELY(lhs == nullptr || rhs == nullptr)) {
+        return false;
+    }
+    const auto& _lhs = unwrap(lhs);
+    const auto& _rhs = unwrap(rhs);
+    if (_lhs == _rhs) {
+        return 0;
+    }
+    return _lhs > _rhs ? 1 : -1;
+}
+
+void json_array_iterator_move(JSONArrayIteratorRef ref, NSInteger length) {
+    if (UNLIKELY(ref == nullptr)) {
+        return;
+    }
+    unwrap(ref)->operator++(static_cast<int>(length));
+}
+
+void json_array_iterator_move_next(JSONArrayIteratorRef ref) {
+    if (UNLIKELY(ref == nullptr)) {
+        return;
+    }
+    unwrap(ref)->operator++();
+}
+
 JSONParseErrorCode json_get_object(JSONValueRef ref, JSONObjectRef out) {
     if (UNLIKELY(ref == nullptr || out == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     auto object = unwrap(out);
     auto code = unwrap(ref)->get_object().get(*object);
@@ -329,7 +394,7 @@ JSONParseErrorCode json_get_object(JSONValueRef ref, JSONObjectRef out) {
 
 size_t json_object_get_count(JSONObjectRef ref) {
     if (UNLIKELY(ref == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     return unwrap(ref)->size();
 }
@@ -349,7 +414,7 @@ const char* json_object_get_key(JSONObjectRef ref, size_t index) {
 
 bool json_object_contains(JSONObjectRef ref, const char* key) {
     if (UNLIKELY(ref == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     auto code = unwrap(ref)->at_key({key}).error();
     return code == error_code::SUCCESS;
@@ -357,9 +422,76 @@ bool json_object_contains(JSONObjectRef ref, const char* key) {
 
 JSONParseErrorCode json_object_get(JSONObjectRef ref, const char* key, JSONValueRef out) {
     if (UNLIKELY(ref == nullptr)) {
-        return JSONParseErrorCodeSuccess;
+        return JSONParseErrorCodeUninitialized;
     }
     auto value = unwrap(out);
     auto code = unwrap(ref)->at_key({key}).get(*value);
     return static_cast<JSONParseErrorCode>(code);
+}
+
+void json_object_get_begin_iterator(JSONObjectRef ref, JSONObjectIteratorRef out) {
+    if (UNLIKELY(ref == nullptr || out == nullptr)) {
+        return;
+    }
+    auto result = unwrap(out);
+    *result = unwrap(ref)->begin();
+}
+
+void json_object_get_end_iterator(JSONObjectRef ref, JSONObjectIteratorRef out) {
+    if (UNLIKELY(ref == nullptr || out == nullptr)) {
+        return;
+    }
+    auto result = unwrap(out);
+    *result = unwrap(ref)->end();
+}
+
+const char* CS_NULLABLE json_object_iterator_get_key(JSONObjectIteratorRef ref, size_t* size) {
+    if (UNLIKELY(ref == nullptr)) {
+        return nullptr;
+    }
+    const auto& key = unwrap(ref)->key();
+    *size = key.length();
+    return key.data();
+}
+
+JSONParseErrorCode json_object_iterator_get_value(JSONObjectIteratorRef ref, JSONValueRef out) {
+    if (UNLIKELY(ref == nullptr)) {
+        return JSONParseErrorCodeUninitialized;
+    }
+    auto value = unwrap(out);
+    auto code = unwrap(ref)->value().get(*value);
+    return static_cast<JSONParseErrorCode>(code);
+}
+
+bool json_object_iterator_is_equal(JSONObjectIteratorRef lhs, JSONObjectIteratorRef rhs) {
+    if (UNLIKELY(lhs == nullptr || rhs == nullptr)) {
+        return false;
+    }
+    return unwrap(lhs)->operator==(*unwrap(rhs));
+}
+
+int json_object_iterator_compare(JSONObjectIteratorRef lhs, JSONObjectIteratorRef rhs) {
+    if (UNLIKELY(lhs == nullptr || rhs == nullptr)) {
+        return false;
+    }
+    const auto& _lhs = unwrap(lhs);
+    const auto& _rhs = unwrap(rhs);
+    if (_lhs == _rhs) {
+        return 0;
+    }
+    return _lhs > _rhs ? 1 : -1;
+}
+
+void json_object_iterator_move(JSONObjectIteratorRef ref, NSInteger length) {
+    if (UNLIKELY(ref == nullptr)) {
+        return;
+    }
+    unwrap(ref)->operator++(static_cast<int>(length));
+}
+
+void json_object_iterator_move_next(JSONObjectIteratorRef ref) {
+    if (UNLIKELY(ref == nullptr)) {
+        return;
+    }
+    unwrap(ref)->operator++();
 }

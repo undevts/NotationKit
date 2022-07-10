@@ -27,7 +27,7 @@ public final class JSONSimdDecoder {
 
     /// Contextual user-provided information for use during decoding.
     public var userInfo: [CodingUserInfoKey: Any] = [:]
-    
+
     // MARK: - Creating a Decoder
 
 #if NK_JSON_BUILD_FOR_EVOLUTION
@@ -42,7 +42,7 @@ public final class JSONSimdDecoder {
         // Do nothing.
     }
 #endif
-    
+
     // MARK: - Decoding
 
     /// Returns a value of the type you specify, decoded from a JSON object.

@@ -1,0 +1,100 @@
+%{
+keys = ['Int', 'Int32', 'Int64', 'UInt', 'UInt32', 'UInt64', 'Double', 'Float', 'Bool', 'String', 'T']
+types = {
+'Int': 'int', 'Int32': 'int32', 'Int64': 'int64',
+'UInt': 'uint', 'UInt32': 'uint32', 'UInt64': 'uint64',
+'Double': 'double', 'Float': 'float', 'Bool': 'bool',
+'String': 'string', 'T': 't'
+}
+}%
+extension StringKeyedJSON {
+% for type in keys:
+%   value = types[type]
+    @inlinable
+% if type == 'T':
+    public mutating func decoded<T>(key: String) -> T where T: JSONDecodable {
+        T.init(item(key: key))
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: String, as type: T.Type) -> T where T: JSONDecodable {
+        T.init(item(key: key))
+% else:
+    public mutating func decoded(key: String) -> ${type} {
+        item(key: key).${value}
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public mutating func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T? where T: JSONFailable {
+        T.init(item(key: key)) ?? `default`()
+% else:
+    public mutating func decoded(key: String, `default`: @autoclosure () -> ${type}) -> ${type} {
+        item(key: key).${value}Value ?? `default`()
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public mutating func decodedValue<T>(key: String) -> T? where T: JSONFailable {
+        T.init(item(key: key))
+    }
+
+    @inlinable
+    public mutating func decodedValue<T>(key: String, as type: T.Type) -> T? where T: JSONFailable {
+        T.init(item(key: key))
+% else:
+    public mutating func decodedValue(key: String) -> ${type}? {
+        item(key: key).${value}Value
+% end
+    }
+
+% end
+}
+
+extension KeyedJSON {
+% for type in keys:
+%   value = types[type]
+    @inlinable
+% if type == 'T':
+    public mutating func decoded<T>(key: Key) -> T where T: JSONDecodable {
+        T.init(item(key: key))
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: Key, as type: T.Type) -> T where T: JSONDecodable {
+        T.init(item(key: key))
+% else:
+    public mutating func decoded(key: Key) -> ${type} {
+        item(key: key).${value}
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public mutating func decoded<T>(key: Key, `default`: @autoclosure () -> T) -> T where T: JSONFailable {
+        T.init(item(key: key)) ?? `default`()
+% else:
+    public mutating func decoded(key: Key, `default`: @autoclosure () -> ${type}) -> ${type} {
+        item(key: key).${value}Value ?? `default`()
+% end
+    }
+
+    @inlinable
+% if type == 'T':
+    public mutating func decodedValue<T>(key: Key) -> T? where T: JSONFailable {
+        T.init(item(key: key))
+    }
+
+    @inlinable
+    public mutating func decodedValue<T>(key: Key, as type: T.Type) -> T? where T: JSONFailable {
+        T.init(item(key: key))
+% else:
+    public mutating func decodedValue(key: Key) -> ${type}? {
+        item(key: key).${value}Value
+% end
+    }
+
+% end
+}

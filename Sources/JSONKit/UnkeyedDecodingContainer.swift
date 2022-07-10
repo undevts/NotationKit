@@ -8,14 +8,27 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer, JSONContainer {
     private var context: _Decoder.Context
     private var _count: Int
     private var _index: Int = 0
+    private let ref: JSONArray
+    private var current: JSONArrayIterator
     private(set) var codingPath: [CodingKey]
-    let ref: JSONArray
     private(set) var value: JSONValue
 
     init(_ context: _Decoder.Context, _ value: JSONValue) {
+        var array = JSONArray()
+        var current = JSONArrayIterator()
+        var v = JSONValue()
+        let count = _decodeArray(value, array: &array)
+        json_array_get_begin_iterator(&array, &current)
+        if count > 0 {
+            json_array_iterator_get_value(&current, &v)
+        }
+
         self.context = context
+        _count = count
         codingPath = context.codingPath
-        (ref, _count, self.value) = _decodeArray(value)
+        ref = array
+        self.current = current
+        self.value = v
     }
 
     @inlinable
@@ -44,9 +57,8 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer, JSONContainer {
         guard _index < _count else {
             return
         }
-        with(ref) { r in
-            _ = json_array_get(r, _index, &value)
-        }
+        json_array_iterator_move_next(&current)
+        json_array_iterator_get_value(&current, &value)
     }
 
     @_transparent
@@ -336,16 +348,18 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer, JSONContainer {
 
 // array, size, first
 @_transparent
-private func _decodeArray(_ value: JSONValue) -> (JSONArray, Int, JSONValue) {
-    var array = JSONArray()
-    var root = JSONValue()
+private func _decodeArray(_ value: JSONValue, array: inout JSONArray) -> Int {
     var size = 0
     with(value) { ref in
         _ = json_get_array(ref, &array)
         size = json_array_get_count(&array)
-        if size > 0 {
-            _ = json_array_get(&array, 0, &root)
-        }
     }
-    return (array, size, root)
+    return size
+}
+
+@_transparent
+func with<Result>(_ value: JSONArrayIterator, _ method: (JSONArrayIteratorRef) throws -> Result) rethrows -> Result {
+    try withUnsafePointer(to: value) { (pointer: UnsafePointer<JSONArrayIterator>) -> Result in
+        try method(UnsafeMutablePointer(mutating: pointer))
+    }
 }

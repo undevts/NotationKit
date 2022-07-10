@@ -33,7 +33,6 @@ extension JSON: Encodable {
     }
 }
 
-
 extension JSON: JSONDecodable {
 #if SWIFT_PACKAGE
     public convenience init(_ json: JSON) {

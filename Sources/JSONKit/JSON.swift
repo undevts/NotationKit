@@ -90,7 +90,7 @@ extension JSON {
     }
 
     @inline(__always)
-    private var arrayRoot: JSONArray? {
+    var arrayRoot: JSONArray? {
         with(value) { ref in
             var root = JSONArray()
             if json_get_array(ref, &root) == JSONParseErrorCode.success {
@@ -101,7 +101,7 @@ extension JSON {
     }
 
     @inline(__always)
-    private var objectRoot: JSONObject? {
+    var objectRoot: JSONObject? {
         with(value) { ref in
             var root = JSONObject()
             if json_get_object(ref, &root) == JSONParseErrorCode.success {
@@ -150,21 +150,42 @@ extension JSON {
 
     @inline(__always)
     func forEach(in array: inout JSONArray, _ method: (JSONValue) -> Void) {
-        let n = json_array_get_count(&array)
+        var current = JSONArrayIterator()
+        var end = JSONArrayIterator()
+        json_array_get_begin_iterator(&array, &current)
+        json_array_get_end_iterator(&array, &end)
+        if json_array_iterator_is_equal(&current, &end) {
+            return
+        }
         var value = JSONValue()
-        for i in 0..<n {
-            _ = json_array_get(&array, i, &value)
+        while !json_array_iterator_is_equal(&current, &end) {
+            _ = json_array_iterator_get_value(&current, &value)
             method(value)
+            json_array_iterator_move_next(&current)
         }
     }
 
     @inline(__always)
     func forEach(in object: inout JSONObject, _ method: (String, JSONValue) -> Void) {
-        let keys = json_object_get_all_keys(&object)
+        var current = JSONObjectIterator()
+        var end = JSONObjectIterator()
+        json_object_get_begin_iterator(&object, &current)
+        json_object_get_end_iterator(&object, &end)
+        if json_object_iterator_is_equal(&current, &end) {
+            return
+        }
+        var size = 0
         var value = JSONValue()
-        for key in keys {
-            _ = json_object_get(&object, key, &value)
-            method(key, value)
+        while !json_object_iterator_is_equal(&current, &end) {
+            let raw = json_object_iterator_get_key(&current, &size)
+            _ = json_object_iterator_get_value(&current, &value)
+            // TODO: use size
+            if let raw = raw, size > 0 {
+                method(String(cString: raw), value)
+            } else {
+                method("", value)
+            }
+            json_object_iterator_move_next(&current)
         }
     }
 
@@ -185,6 +206,7 @@ extension JSON {
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public subscript<Key>(key: Key) -> JSON where Key: CodingKey {
         item(key: key)
     }
@@ -240,21 +262,25 @@ extension JSON {
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T>(key: String, map method: (JSON) -> T) -> [T] {
         item(key: key).decoded(map: method)
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T>(key: String, compactMap method: (JSON) -> T?) -> [T] {
         item(key: key).decoded(compactMap: method)
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T, Key>(key: Key, map method: (JSON) -> T) -> [T] where Key: CodingKey {
         item(key: key).decoded(map: method)
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T, Key>(key: Key, compactMap method: (JSON) -> T?) -> [T] where Key: CodingKey {
         item(key: key).decoded(compactMap: method)
     }
@@ -290,18 +316,21 @@ extension JSON {
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<S, T>(key: String, in list: S, map method: (JSON) -> T) -> S
         where S: RangeReplaceableCollection, S.Element == T {
         item(key: key).decoded(in: list, map: method)
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<S, T>(key: String, in list: S, compactMap method: (JSON) -> T?) -> S?
         where S: RangeReplaceableCollection, S.Element == T {
         item(key: key).decoded(in: list, compactMap: method)
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<S, T, Key>(key: Key, in list: S, map method: (JSON) -> T) -> S
         where S: RangeReplaceableCollection, S.Element == T, Key: CodingKey {
         item(key: key).decoded(in: list, map: method)
@@ -373,6 +402,7 @@ extension JSON: TypeNotation {
             var size = 0
             let out = json_get_string(ref, &size, nil)
             if let out = out, size > 0 {
+                // TODO: use size
                 return String(cString: out)
             }
             return ""

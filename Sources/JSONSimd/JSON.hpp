@@ -10,7 +10,11 @@ CS_SIMPLE_CONVERSION(simdjson::dom::element, JSONValueRef)
 
 CS_SIMPLE_CONVERSION(simdjson::dom::array, JSONArrayRef)
 
+CS_SIMPLE_CONVERSION(simdjson::dom::array::iterator, JSONArrayIteratorRef)
+
 CS_SIMPLE_CONVERSION(simdjson::dom::object, JSONObjectRef)
+
+CS_SIMPLE_CONVERSION(simdjson::dom::object::iterator, JSONObjectIteratorRef)
 
 CS_SIMPLE_CONVERSION(simdjson::padded_string, JSONInputRef)
 

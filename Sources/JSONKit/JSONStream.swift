@@ -260,22 +260,22 @@ extension JSONStream {
             buffer.deallocate()
         }
     }
-    
+
     @inline(__always)
     mutating func _beginObject() {
         put(symbol: .leftBracket)
     }
-    
+
     @inline(__always)
     mutating func _endObject() {
         put(symbol: .rightBracket)
     }
-    
+
     @inline(__always)
     mutating func _beginArray() {
         put(symbol: .leftSquare)
     }
-    
+
     @inline(__always)
     mutating func _endArray() {
         put(symbol: .rightSquare)

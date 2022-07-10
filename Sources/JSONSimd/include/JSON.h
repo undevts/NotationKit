@@ -33,7 +33,15 @@ struct JSONObject {
     uint8_t data[16];
 };
 
+struct JSONObjectIterator {
+    uint8_t data[16];
+};
+
 struct JSONArray {
+    uint8_t data[16];
+};
+
+struct JSONArrayIterator {
     uint8_t data[16];
 };
 
@@ -42,11 +50,13 @@ struct JSONValue {
 };
 
 typedef struct NKOpaqueJSON* JSONRef;
+typedef struct NKOpaqueJSONInput* JSONInputRef;
+
 typedef struct JSONValue* JSONValueRef;
 typedef struct JSONArray* JSONArrayRef;
+typedef struct JSONArrayIterator* JSONArrayIteratorRef;
 typedef struct JSONObject* JSONObjectRef;
-
-typedef struct NKOpaqueJSONInput* JSONInputRef;
+typedef struct JSONObjectIterator* JSONObjectIteratorRef;
 
 JSONInputRef json_input_create(const char* value);
 JSONInputRef json_input_create_length(const char* value, size_t length);
@@ -82,11 +92,28 @@ JSONParseErrorCode json_get_array(JSONValueRef ref, JSONArrayRef out);
 size_t json_array_get_count(JSONArrayRef ref);
 JSONParseErrorCode json_array_get(JSONArrayRef ref, size_t index, JSONValueRef out);
 
+void json_array_get_begin_iterator(JSONArrayRef ref, JSONArrayIteratorRef out);
+void json_array_get_end_iterator(JSONArrayRef ref, JSONArrayIteratorRef out);
+JSONParseErrorCode json_array_iterator_get_value(JSONArrayIteratorRef ref, JSONValueRef out);
+bool json_array_iterator_is_equal(JSONArrayIteratorRef lhs, JSONArrayIteratorRef rhs);
+int json_array_iterator_compare(JSONArrayIteratorRef lhs, JSONArrayIteratorRef rhs);
+void json_array_iterator_move(JSONArrayIteratorRef ref, NSInteger length);
+void json_array_iterator_move_next(JSONArrayIteratorRef ref);
+
 JSONParseErrorCode json_get_object(JSONValueRef ref, JSONObjectRef out);
 size_t json_object_get_count(JSONObjectRef ref);
 const char* CS_NULLABLE json_object_get_key(JSONObjectRef ref, size_t index);
 bool json_object_contains(JSONObjectRef ref, const char* key);
 JSONParseErrorCode json_object_get(JSONObjectRef ref, const char* key, JSONValueRef out);
+
+void json_object_get_begin_iterator(JSONObjectRef ref, JSONObjectIteratorRef out);
+void json_object_get_end_iterator(JSONObjectRef ref, JSONObjectIteratorRef out);
+const char* CS_NULLABLE json_object_iterator_get_key(JSONObjectIteratorRef ref, size_t* size);
+JSONParseErrorCode json_object_iterator_get_value(JSONObjectIteratorRef ref, JSONValueRef out);
+bool json_object_iterator_is_equal(JSONObjectIteratorRef lhs, JSONObjectIteratorRef rhs);
+int json_object_iterator_compare(JSONObjectIteratorRef lhs, JSONObjectIteratorRef rhs);
+void json_object_iterator_move(JSONObjectIteratorRef ref, NSInteger length);
+void json_object_iterator_move_next(JSONObjectIteratorRef ref);
 
 #if CS_LANG_OBJC
 NSArray<NSString*>* json_object_get_all_keys(JSONObjectRef ref);

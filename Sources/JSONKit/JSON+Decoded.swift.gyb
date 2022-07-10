@@ -37,14 +37,17 @@ extension JSON {
 
     @inlinable
 % if type == 'T':
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T>(key: String) -> T where T: JSONDecodable {
         T.init(item(key: key))
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T>(key: String, as type: T.Type) -> T where T: JSONDecodable {
         T.init(item(key: key))
 % else:
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded(key: String) -> ${type} {
         item(key: key).${value}
 % end
@@ -52,9 +55,11 @@ extension JSON {
 
     @inlinable
 % if type == 'T':
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T? where T: JSONFailable {
         T.init(item(key: key)) ?? `default`()
 % else:
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded(key: String, `default`: @autoclosure () -> ${type}) -> ${type} {
         item(key: key).${value}Value ?? `default`()
 % end
@@ -62,14 +67,17 @@ extension JSON {
 
     @inlinable
 % if type == 'T':
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T, Key>(key: Key) -> T where T: JSONDecodable, Key: CodingKey {
         T.init(item(key: key))
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T, Key>(key: Key, as type: T.Type) -> T where T: JSONDecodable, Key: CodingKey {
         T.init(item(key: key))
 % else:
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<Key>(key: Key) -> ${type} where Key: CodingKey {
         item(key: key).${value}
 % end
@@ -77,9 +85,11 @@ extension JSON {
 
     @inlinable
 % if type == 'T':
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T, Key>(key: Key, `default`: @autoclosure () -> T) -> T where T: JSONFailable, Key: CodingKey {
         T.init(item(key: key)) ?? `default`()
 % else:
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<Key>(key: Key, `default`: @autoclosure () -> ${type}) -> ${type} where Key: CodingKey {
         item(key: key).${value}Value ?? `default`()
 % end
@@ -102,14 +112,17 @@ extension JSON {
 
     @inlinable
 % if type == 'T':
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decodedValue<T>(key: String) -> T? where T: JSONFailable {
         T.init(item(key: key))
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decodedValue<T>(key: String, as type: T.Type) -> T? where T: JSONFailable {
         T.init(item(key: key))
 % else:
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decodedValue(key: String) -> ${type}? {
         item(key: key).${value}Value
 % end
@@ -117,14 +130,17 @@ extension JSON {
 
     @inlinable
 % if type == 'T':
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decodedValue<T, Key>(key: Key) -> T? where T: JSONFailable, Key: CodingKey {
         T.init(item(key: key))
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decodedValue<T, Key>(key: Key, as type: T.Type) -> T? where T: JSONFailable, Key: CodingKey {
         T.init(item(key: key))
 % else:
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decodedValue<Key>(key: Key) -> ${type}? where Key: CodingKey {
         item(key: key).${value}Value
 % end

@@ -10,3 +10,4 @@ DerivedData/
 .vscode
 .docc-build
 Package.resolved
+cmake-build-debug
