@@ -267,13 +267,12 @@ extension JSON {
         return result
     }
 
-
-    /// Decode current value as a dictionary and calls the transform method on each JSON value in it.
+    /// Decode current value as an array and calls the transform method on each JSON value in it.
     ///
-    /// Same as `json.dictionary.map(method)` but more efficient.
+    /// Same as `json.array.map(method)` but more efficient.
     ///
     /// - Parameter method: A mapping closure.
-    /// - Returns: The mapped result, if current value is not a JSON object, an empty dictionary will return.
+    /// - Returns: The mapped result, if current value is not a JSON array, an empty array will return.
     public func decoded<T>(compactMap method: (JSON) -> T?) -> [T] {
         guard var root = arrayRoot else {
             return []
@@ -364,6 +363,12 @@ extension JSON {
         item(key: key).decoded(in: list, map: method)
     }
 
+    /// Decode current value as a dictionary and calls the transform method on each JSON value in it.
+    ///
+    /// Same as `json.dictionary.map(method)` but more efficient.
+    ///
+    /// - Parameter method: A mapping closure.
+    /// - Returns: The mapped result, if current value is not a JSON object, an empty dictionary will return.
     public func decoded<T>(map method: (JSON) -> T) -> [String: T] {
         guard var root = objectRoot else {
             return [:]
@@ -377,6 +382,12 @@ extension JSON {
         return result
     }
 
+    /// Decode current value as a dictionary and calls the transform method on each JSON value in it.
+    ///
+    /// Same as `json.dictionary.map(method)` but more efficient.
+    ///
+    /// - Parameter method: A mapping closure.
+    /// - Returns: The mapped result, if current value is not a JSON object, an empty dictionary will return.
     public func decoded<T>(compactMap method: (JSON) -> T?) -> [String: T] {
         guard var root = objectRoot else {
             return [:]
