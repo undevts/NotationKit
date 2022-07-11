@@ -28,6 +28,7 @@ public struct JSONParseError: Error, LocalizedError {
 #if SWIFT_PACKAGE
 /// An object representing a JSON value, array or object.
 public final class JSON {
+    /// A static property that represents JSON null value.
     public static let null = JSON(ref: json_create_null())
 
     @usableFromInline
@@ -53,6 +54,7 @@ public final class JSON {
 #else
 /// A JSON value, array or object.
 public struct JSON {
+    /// A static property that represents JSON null value.
     public static let null = JSON(ref: json_create_null())
 
     @usableFromInline
@@ -78,10 +80,12 @@ public struct JSON {
 #endif
 
 extension JSON {
+    /// The type of current root JSON value.
     public var type: JSONType {
         with(value, json_get_type)
     }
 
+    /// A bool value indicating whether current value is null.
     public var isNull: Bool {
         with(value, json_is_null)
     }
@@ -214,11 +218,19 @@ extension JSON {
         item(key: key)
     }
 
+    /// Parses a JSON string, converting it to an in-memory representation.
+    ///
+    /// - Parameter value: The JSON string to decode.
+    /// - Returns: A result indicating success or failure.
     @inlinable
     public static func parse(_ value: String) -> Result<JSON, JSONParseError> {
         JSONStorage.parse(value).map(JSON.init(storage:))
     }
 
+    /// Parses a JSON data, converting it to an in-memory representation.
+    ///
+    /// - Parameter data: The JSON data to decode.
+    /// - Returns: A result indicating success or failure.
     @inlinable
     public static func parse(_ data: Data) -> Result<JSON, JSONParseError> {
         JSONStorage.parse(data).map(JSON.init(storage:))
@@ -236,6 +248,12 @@ extension JSON {
         return try decoder.decode(type, storage: storage)
     }
 
+    /// Decode current value as an array and calls the transform method on each JSON value in it.
+    ///
+    /// Same as `json.array.map(method)` but more efficient.
+    ///
+    /// - Parameter method: A mapping closure.
+    /// - Returns: The mapped result, if current value is not a JSON array, an empty array will return.
     public func decoded<T>(map method: (JSON) -> T) -> [T] {
         guard var root = arrayRoot else {
             return []
@@ -249,6 +267,13 @@ extension JSON {
         return result
     }
 
+
+    /// Decode current value as a dictionary and calls the transform method on each JSON value in it.
+    ///
+    /// Same as `json.dictionary.map(method)` but more efficient.
+    ///
+    /// - Parameter method: A mapping closure.
+    /// - Returns: The mapped result, if current value is not a JSON object, an empty dictionary will return.
     public func decoded<T>(compactMap method: (JSON) -> T?) -> [T] {
         guard var root = arrayRoot else {
             return []

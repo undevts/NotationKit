@@ -1,3 +1,4 @@
+/// An enumeration that can represent any coding keys.
 @frozen
 public enum AnyCodingKey: CodingKey, ExpressibleByStringLiteral, ExpressibleByIntegerLiteral {
     case keyed(String)
