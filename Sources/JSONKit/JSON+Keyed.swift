@@ -3,6 +3,7 @@
 #endif
 
 extension JSON {
+    @inlinable
     public func keyed() -> StringKeyedJSON {
         if let root = objectRoot {
             return StringKeyedJSON(storage: storage, root: root)
@@ -10,6 +11,7 @@ extension JSON {
         return StringKeyedJSON(storage: storage)
     }
 
+    @inlinable
     public func keyed<Key>(by type: Key.Type) -> KeyedJSON<Key> where Key: CodingKey {
         if let root = objectRoot {
             return KeyedJSON(storage: storage, root: root)
@@ -18,29 +20,32 @@ extension JSON {
     }
 }
 
-/// Decode a JSON Object with String keys.
-public final class StringKeyedJSON {
+// Direct use of the `struct` will cause **Crash**, same as `JSON`. so, wrapped by `class`.
+@usableFromInline
+final class KeyedContainer {
     let storage: JSONStorage
     let isEmpty: Bool
-    private var root: JSONObject
-    private var start: JSONObjectIterator
-    private var end: JSONObjectIterator
+    private var root: json_object
+    private var start: json_object_iterator
+    private var end: json_object_iterator
     private var cache: Set<Item> = []
 
     @inline(__always)
+    @usableFromInline
     init(storage: JSONStorage) {
         self.storage = storage
         isEmpty = true
-        root = JSONObject()
-        start = JSONObjectIterator()
-        end = JSONObjectIterator()
+        root = json_object()
+        start = json_object_iterator()
+        end = json_object_iterator()
     }
 
     @inline(__always)
-    init(storage: JSONStorage, root: JSONObject) {
+    @usableFromInline
+    init(storage: JSONStorage, root: json_object) {
         var root = root
-        var start = JSONObjectIterator()
-        var end = JSONObjectIterator()
+        var start = json_object_iterator()
+        var end = json_object_iterator()
         json_object_get_begin_iterator(&root, &start)
         json_object_get_end_iterator(&root, &end)
         self.storage = storage
@@ -50,14 +55,8 @@ public final class StringKeyedJSON {
         self.end = end
     }
 
-    @inlinable
-    public subscript(key: String) -> JSON {
-        get {
-            item(key: key)
-        }
-    }
-
-    public func item(key: String) -> JSON {
+    @inline(__always)
+    func item(key: String) -> JSON {
         // Current root is empty.
         if isEmpty {
             return JSON.null
@@ -73,7 +72,7 @@ public final class StringKeyedJSON {
             return JSON.null
         }
         var size = 0
-        var value = JSONValue()
+        var value = json_value()
         while !json_object_iterator_is_equal(&start, &end) {
             let raw = json_object_iterator_get_key(&start, &size)
             _ = json_object_iterator_get_value(&start, &value)
@@ -95,14 +94,14 @@ public final class StringKeyedJSON {
 
     struct Item: Hashable {
         let key: String
-        let value: JSONValue
+        let value: json_value
 
         init(key: String) {
             self.key = key
-            value = JSONValue()
+            value = json_value()
         }
 
-        init(key: String, value: JSONValue) {
+        init(key: String, value: json_value) {
             self.key = key
             self.value = value
         }
@@ -117,52 +116,64 @@ public final class StringKeyedJSON {
     }
 }
 
-/// Decode a JSON Object with typed keys.
-public final class KeyedJSON<Key> where Key: CodingKey {
-    private var delegate: StringKeyedJSON
+/// Decode a JSON Object with String keys.
+@frozen
+public struct StringKeyedJSON {
+    @usableFromInline
+    let delegate: KeyedContainer
 
+    @inlinable
     @inline(__always)
     init(storage: JSONStorage) {
-        delegate = StringKeyedJSON(storage: storage)
-    }
-
-    @inline(__always)
-    init(storage: JSONStorage, root: JSONObject) {
-        delegate = StringKeyedJSON(storage: storage, root: root)
+        delegate = KeyedContainer(storage: storage)
     }
 
     @inlinable
-    public subscript(key: Key) -> JSON {
-        get {
+    @inline(__always)
+    init(storage: JSONStorage, root: json_object) {
+        delegate = KeyedContainer(storage: storage, root: root)
+    }
+
+    @inlinable
+    public subscript(key: String) -> JSON {
+        mutating get {
             item(key: key)
         }
     }
 
-    public func item(key: Key) -> JSON {
+    public mutating func item(key: String) -> JSON {
+        // No need to COW here.
+        delegate.item(key: key)
+    }
+}
+
+/// Decode a JSON Object with typed keys.
+@frozen
+public struct KeyedJSON<Key> where Key: CodingKey {
+    @usableFromInline
+    let delegate: KeyedContainer
+
+    @inlinable
+    @inline(__always)
+    init(storage: JSONStorage) {
+        delegate = KeyedContainer(storage: storage)
+    }
+
+    @inlinable
+    @inline(__always)
+    init(storage: JSONStorage, root: json_object) {
+        delegate = KeyedContainer(storage: storage, root: root)
+    }
+
+    @inlinable
+    public subscript(key: Key) -> JSON {
+        mutating get {
+            item(key: key)
+        }
+    }
+
+    public mutating func item(key: Key) -> JSON {
+        // No need to COW here.
         delegate.item(key: key.stringValue)
-    }
-}
-
-extension StringKeyedJSON {
-    @inlinable
-    public func decoded<T>(key: String, map method: (JSON) -> T) -> [T] {
-        item(key: key).decoded(map: method)
-    }
-
-    @inlinable
-    public func decoded<T>(key: String, compactMap method: (JSON) -> T?) -> [T] {
-        item(key: key).decoded(compactMap: method)
-    }
-}
-
-extension KeyedJSON {
-    @inlinable
-    public func decoded<T>(key: Key, map method: (JSON) -> T) -> [T] {
-        item(key: key).decoded(map: method)
-    }
-
-    @inlinable
-    public func decoded<T>(key: Key, compactMap method: (JSON) -> T?) -> [T] {
-        item(key: key).decoded(compactMap: method)
     }
 }

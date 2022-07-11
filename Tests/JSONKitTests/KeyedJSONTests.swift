@@ -6,7 +6,7 @@ struct SomeApi: Codable {
     let message: String
     let currentPage: UInt
     let totalPage: UInt
-    
+
     enum CodingKeys: String, CodingKey {
         case code
         case message = "msg"
@@ -17,17 +17,25 @@ struct SomeApi: Codable {
 
 extension SomeApi: JSONDecodable {
     init(_ json: JSON) {
-        let keyed = json.keyed()
+        var keyed = json.keyed()
         code = keyed.decoded(key: "code")
         message = keyed.decoded(key: "msg")
         currentPage = keyed.decoded(key: "currentPage")
         totalPage = keyed.decoded(key: "totalPage")
     }
+
+    init(keyed json: JSON) {
+        var keyed = json.keyed(by: CodingKeys.self)
+        code = keyed.decoded(key: .code)
+        message = keyed.decoded(key: .message)
+        currentPage = keyed.decoded(key: .currentPage)
+        totalPage = keyed.decoded(key: .totalPage)
+    }
 }
 
 final class KeyedJSONTests: XCTestCase {
-    typealias Item = StringKeyedJSON.Item
-    
+    typealias Item = KeyedContainer.Item
+
     func testItemSet() {
         var set = Set<Item>()
         XCTAssertTrue(set.isEmpty)
@@ -35,11 +43,23 @@ final class KeyedJSONTests: XCTestCase {
         XCTAssertFalse(set.contains(i))
         set.update(with: i)
         XCTAssertTrue(set.contains(i))
+        let j = Item(key: "foo", value: json_value())
+        XCTAssertTrue(set.contains(j))
     }
-    
+
     func testStringKeyedDecode() throws {
         let api = try JSON.parse(#"{"code": 0,"msg": "SUCCESS","currentPage": 1,"totalPage": 2}"#,
             as: SomeApi.self).get()
+        XCTAssertEqual(api.code, 0)
+        XCTAssertEqual(api.message, "SUCCESS")
+        XCTAssertEqual(api.currentPage, 1)
+        XCTAssertEqual(api.totalPage, 2)
+    }
+
+    func testKeyedDecode() throws {
+        let api = try JSON.parse(#"{"code": 0,"msg": "SUCCESS","currentPage": 1,"totalPage": 2}"#)
+            .map(SomeApi.init(keyed:))
+            .get()
         XCTAssertEqual(api.code, 0)
         XCTAssertEqual(api.message, "SUCCESS")
         XCTAssertEqual(api.currentPage, 1)

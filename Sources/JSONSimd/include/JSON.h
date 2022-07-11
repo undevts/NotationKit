@@ -29,34 +29,14 @@ static const inline NSInteger NK_JSON_DATA_PADDING = 32;
 static const NSInteger NK_JSON_DATA_PADDING = 32;
 #endif
 
-struct JSONObject {
-    uint8_t data[16];
-};
-
-struct JSONObjectIterator {
-    uint8_t data[16];
-};
-
-struct JSONArray {
-    uint8_t data[16];
-};
-
-struct JSONArrayIterator {
-    uint8_t data[16];
-};
-
-struct JSONValue {
-    uint8_t data[16];
-};
-
 typedef struct NKOpaqueJSON* JSONRef;
 typedef struct NKOpaqueJSONInput* JSONInputRef;
 
-typedef struct JSONValue* JSONValueRef;
-typedef struct JSONArray* JSONArrayRef;
-typedef struct JSONArrayIterator* JSONArrayIteratorRef;
-typedef struct JSONObject* JSONObjectRef;
-typedef struct JSONObjectIterator* JSONObjectIteratorRef;
+typedef struct json_value* JSONValueRef;
+typedef struct json_array* JSONArrayRef;
+typedef struct json_array_iterator* JSONArrayIteratorRef;
+typedef struct json_object* JSONObjectRef;
+typedef struct json_object_iterator* JSONObjectIteratorRef;
 
 JSONInputRef json_input_create(const char* value);
 JSONInputRef json_input_create_length(const char* value, size_t length);

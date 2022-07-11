@@ -27,7 +27,7 @@ extension JSON {
 
     @inlinable
 % if type == 'T':
-    public func decoded<T>(`default`: @autoclosure () -> T) -> T? where T: JSONFailable {
+    public func decoded<T>(`default`: @autoclosure () -> T) -> T where T: JSONFailable {
         T.init(self) ?? `default`()
 % else:
     public func decoded(`default`: @autoclosure () -> ${type}) -> ${type} {
@@ -56,7 +56,7 @@ extension JSON {
     @inlinable
 % if type == 'T':
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
-    public func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T? where T: JSONFailable {
+    public func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T where T: JSONFailable {
         T.init(item(key: key)) ?? `default`()
 % else:
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")

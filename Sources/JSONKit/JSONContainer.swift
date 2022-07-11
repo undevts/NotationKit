@@ -4,5 +4,5 @@
 
 protocol JSONContainer {
     var storage: JSONStorage { get }
-    var value: JSONValue { get }
+    var value: json_value { get }
 }

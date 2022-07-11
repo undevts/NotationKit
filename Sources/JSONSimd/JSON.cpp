@@ -4,11 +4,11 @@
 
 using namespace simdjson;
 
-static_assert(sizeof(dom::array) == sizeof(JSONArray));
-static_assert(sizeof(dom::array::iterator) == sizeof(JSONArrayIterator));
-static_assert(sizeof(dom::object) == sizeof(JSONObject));
-static_assert(sizeof(dom::object::iterator) == sizeof(JSONObjectIterator));
-static_assert(sizeof(dom::element) == sizeof(JSONValue));
+static_assert(sizeof(dom::array) == sizeof(json_array));
+static_assert(sizeof(dom::array::iterator) == sizeof(json_array_iterator));
+static_assert(sizeof(dom::object) == sizeof(json_object));
+static_assert(sizeof(dom::object::iterator) == sizeof(json_object_iterator));
+static_assert(sizeof(dom::element) == sizeof(json_value));
 
 template<typename T, std::enable_if_t<std::is_same_v<T, bool>, bool> = true>
 static inline JSONParseErrorCode json_get_number(const dom::element& value, T& out) {

@@ -6,10 +6,10 @@ import Foundation
 
 struct SimdDecoder: JSONContainer {
     let storage: JSONStorage
-    let value: JSONValue
+    let value: json_value
 
     @_transparent
-    init(storage: JSONStorage, value: JSONValue) {
+    init(storage: JSONStorage, value: json_value) {
         self.storage = storage
         self.value = value
     }
@@ -32,7 +32,7 @@ struct SimdDecoder: JSONContainer {
 
     @inline(__always)
     private func with<Result>(_ method: (JSONValueRef) -> Result) -> Result {
-        withUnsafePointer(to: value) { (pointer: UnsafePointer<JSONValue>) -> Result in
+        withUnsafePointer(to: value) { (pointer: UnsafePointer<json_value>) -> Result in
             method(UnsafeMutablePointer(mutating: pointer))
         }
     }
@@ -40,7 +40,7 @@ struct SimdDecoder: JSONContainer {
     @inline(__always)
     private func with<Result>(_ method: (JSONValueRef, UnsafeMutablePointer<JSONParseErrorCode>?) -> Result)
         -> (Result, JSONParseErrorCode) {
-        withUnsafePointer(to: value) { (pointer: UnsafePointer<JSONValue>) -> (Result, JSONParseErrorCode) in
+        withUnsafePointer(to: value) { (pointer: UnsafePointer<json_value>) -> (Result, JSONParseErrorCode) in
             var code = JSONParseErrorCode.success
             let result = method(UnsafeMutablePointer(mutating: pointer), &code)
             return (result, code)
@@ -657,7 +657,7 @@ struct SimdDecoder: JSONContainer {
 }
 
 @inline(__always)
-func description(of value: JSONValue) -> String {
+func description(of value: json_value) -> String {
     with(value) { ref in
         switch json_get_type(ref) {
         case .null:
@@ -686,29 +686,29 @@ func message(of value: JSONParseErrorCode) -> String {
 }
 
 @_transparent
-func with<Result>(_ value: JSONValue, _ method: (JSONValueRef) throws -> Result) rethrows -> Result {
-    try withUnsafePointer(to: value) { (pointer: UnsafePointer<JSONValue>) -> Result in
+func with<Result>(_ value: json_value, _ method: (JSONValueRef) throws -> Result) rethrows -> Result {
+    try withUnsafePointer(to: value) { (pointer: UnsafePointer<json_value>) -> Result in
         try method(UnsafeMutablePointer(mutating: pointer))
     }
 }
 
 @_transparent
-func with<Result>(_ value: JSONArray, _ method: (JSONArrayRef) throws -> Result) rethrows -> Result {
-    try withUnsafePointer(to: value) { (pointer: UnsafePointer<JSONArray>) -> Result in
+func with<Result>(_ value: json_array, _ method: (JSONArrayRef) throws -> Result) rethrows -> Result {
+    try withUnsafePointer(to: value) { (pointer: UnsafePointer<json_array>) -> Result in
         try method(UnsafeMutablePointer(mutating: pointer))
     }
 }
 
 @_transparent
-func with<Result>(_ value: JSONObject, _ method: (JSONObjectRef) throws -> Result) rethrows -> Result {
-    try withUnsafePointer(to: value) { (pointer: UnsafePointer<JSONObject>) -> Result in
+func with<Result>(_ value: json_object, _ method: (JSONObjectRef) throws -> Result) rethrows -> Result {
+    try withUnsafePointer(to: value) { (pointer: UnsafePointer<json_object>) -> Result in
         try method(UnsafeMutablePointer(mutating: pointer))
     }
 }
 
 @_transparent
-func with<Result>(_ value: inout JSONValue, _ method: (JSONValueRef) throws -> Result) rethrows -> Result {
-    try withUnsafePointer(to: &value) { (pointer: UnsafePointer<JSONValue>) -> Result in
+func with<Result>(_ value: inout json_value, _ method: (JSONValueRef) throws -> Result) rethrows -> Result {
+    try withUnsafePointer(to: &value) { (pointer: UnsafePointer<json_value>) -> Result in
         try method(UnsafeMutablePointer(mutating: pointer))
     }
 }

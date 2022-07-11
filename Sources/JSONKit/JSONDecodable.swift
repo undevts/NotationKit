@@ -1,9 +1,17 @@
 import Foundation
 
+/// A type that can decode itself from an JSON representation.
 public protocol JSONDecodable {
+    /// Creates a new instance by decoding from the given ``JSON``.
+    ///
+    /// This initializer ignore any errors. if decoding errors important,
+    ///  use ``JSONFailable`` or ``JSONCreatable`` instead.
+    ///
+    /// - Parameter json: The JSON data.
     init(_ json: JSON)
 }
 
+/// A type that can decode itself (or failed) from an JSON representation.
 public protocol JSONFailable {
     init?(_ json: JSON)
 }
@@ -13,6 +21,11 @@ public protocol JSONCreatable {
 }
 
 extension Array: JSONDecodable where Element: JSONDecodable {
+    /// Creates a new array by decoding from the given ``JSON``.
+    ///
+    /// Same as `json.decoded(map: Element.init)`
+    ///
+    /// - Parameter json: The JSON data.
     @inlinable
     public init(_ json: JSON) {
         self = json.decoded(map: Element.init)
@@ -20,16 +33,23 @@ extension Array: JSONDecodable where Element: JSONDecodable {
 }
 
 extension Array: JSONFailable where Element: JSONFailable {
+    /// Creates a new array by decoding  (or failed) from the given ``JSON``.
+    ///
+    /// Same as `json.decoded(compactMap: Element.init)`
+    ///
+    /// - Parameter json: The JSON data.
     @inlinable
     public init?(_ json: JSON) {
-        guard let array = json.arrayValue else {
-            return nil
-        }
-        self = array.compactMap(Element.init)
+        self = json.decoded(compactMap: Element.init)
     }
 }
 
 extension Dictionary: JSONDecodable where Key == String, Value: JSONDecodable {
+    /// Creates a new dictionary by decoding from the given ``JSON``.
+    ///
+    /// Same as `json.decoded(map: Element.init)`
+    ///
+    /// - Parameter json: The JSON data.
     @inlinable
     public init(_ json: JSON) {
         self = json.decoded(map: Value.init)
@@ -37,12 +57,14 @@ extension Dictionary: JSONDecodable where Key == String, Value: JSONDecodable {
 }
 
 extension Dictionary: JSONFailable where Key == String, Value: JSONFailable {
+    /// Creates a new dictionary by decoding  (or failed) from the given ``JSON``.
+    ///
+    /// Same as `json.decoded(compactMap: Value.init)`
+    ///
+    /// - Parameter json: The JSON data.
     @inlinable
     public init?(_ json: JSON) {
-        guard let dictionary = json.dictionaryValue else {
-            return nil
-        }
-        self = dictionary.compactMapValues(Value.init)
+        self = json.decoded(compactMap: Value.init)
     }
 }
 

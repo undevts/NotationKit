@@ -9,8 +9,8 @@ final class JSONStorage {
     var ref: JSONRef
 
     @inline(__always)
-    var root: JSONValue {
-        var out = JSONValue()
+    var root: json_value {
+        var out = json_value()
         json_get_root(ref, &out)
         return out
     }

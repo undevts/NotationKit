@@ -95,6 +95,26 @@ typedef struct {
     uint8_t buffer[21];
 } json_number_64;
 
+typedef struct json_object {
+    uint8_t data[16];
+} json_object;
+
+typedef struct json_object_iterator {
+    uint8_t data[16];
+} json_object_iterator;
+
+typedef struct json_array {
+    uint8_t data[16];
+} json_array;
+
+typedef struct json_array_iterator {
+    uint8_t data[16];
+} json_array_iterator;
+
+typedef struct json_value {
+    uint8_t data[16];
+} json_value;
+
 size_t json_write_int32(json_number_32* CS_NONNULL buffer, int32_t value);
 size_t json_write_uint32(json_number_32* CS_NONNULL buffer, uint32_t value);
 size_t json_write_int64(json_number_64* CS_NONNULL buffer, int64_t value);

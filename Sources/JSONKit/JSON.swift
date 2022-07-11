@@ -30,8 +30,9 @@ public struct JSONParseError: Error, LocalizedError {
 public final class JSON {
     public static let null = JSON(ref: json_create_null())
 
+    @usableFromInline
     let storage: JSONStorage
-    let value: JSONValue
+    let value: json_value
 
     @usableFromInline
     init(storage: JSONStorage) {
@@ -39,7 +40,7 @@ public final class JSON {
         value = storage.root
     }
 
-    init(storage: JSONStorage, value: JSONValue?) {
+    init(storage: JSONStorage, value: json_value?) {
         self.storage = storage
         self.value = value ?? storage.root
     }
@@ -54,8 +55,9 @@ public final class JSON {
 public struct JSON {
     public static let null = JSON(ref: json_create_null())
 
+    @usableFromInline
     let storage: JSONStorage
-    let value: JSONValue
+    let value: json_value
 
     @usableFromInline
     init(storage: JSONStorage) {
@@ -63,7 +65,7 @@ public struct JSON {
         value = storage.root
     }
 
-    init(storage: JSONStorage, value: JSONValue?) {
+    init(storage: JSONStorage, value: json_value?) {
         self.storage = storage
         self.value = value ?? storage.root
     }
@@ -90,9 +92,9 @@ extension JSON {
     }
 
     @inline(__always)
-    var arrayRoot: JSONArray? {
+    var arrayRoot: json_array? {
         with(value) { ref in
-            var root = JSONArray()
+            var root = json_array()
             if json_get_array(ref, &root) == JSONParseErrorCode.success {
                 return root
             }
@@ -101,9 +103,10 @@ extension JSON {
     }
 
     @inline(__always)
-    var objectRoot: JSONObject? {
+    @usableFromInline
+    var objectRoot: json_object? {
         with(value) { ref in
-            var root = JSONObject()
+            var root = json_object()
             if json_get_object(ref, &root) == JSONParseErrorCode.success {
                 return root
             }
@@ -139,25 +142,25 @@ extension JSON {
     }
 
     @inline(__always)
-    func count(of array: inout JSONArray) -> Int {
+    func count(of array: inout json_array) -> Int {
         json_array_get_count(&array)
     }
 
     @inline(__always)
-    func count(of object: inout JSONObject) -> Int {
+    func count(of object: inout json_object) -> Int {
         json_object_get_count(&object)
     }
 
     @inline(__always)
-    func forEach(in array: inout JSONArray, _ method: (JSONValue) -> Void) {
-        var current = JSONArrayIterator()
-        var end = JSONArrayIterator()
+    func forEach(in array: inout json_array, _ method: (json_value) -> Void) {
+        var current = json_array_iterator()
+        var end = json_array_iterator()
         json_array_get_begin_iterator(&array, &current)
         json_array_get_end_iterator(&array, &end)
         if json_array_iterator_is_equal(&current, &end) {
             return
         }
-        var value = JSONValue()
+        var value = json_value()
         while !json_array_iterator_is_equal(&current, &end) {
             _ = json_array_iterator_get_value(&current, &value)
             method(value)
@@ -166,16 +169,16 @@ extension JSON {
     }
 
     @inline(__always)
-    func forEach(in object: inout JSONObject, _ method: (String, JSONValue) -> Void) {
-        var current = JSONObjectIterator()
-        var end = JSONObjectIterator()
+    func forEach(in object: inout json_object, _ method: (String, json_value) -> Void) {
+        var current = json_object_iterator()
+        var end = json_object_iterator()
         json_object_get_begin_iterator(&object, &current)
         json_object_get_end_iterator(&object, &end)
         if json_object_iterator_is_equal(&current, &end) {
             return
         }
         var size = 0
-        var value = JSONValue()
+        var value = json_value()
         while !json_object_iterator_is_equal(&current, &end) {
             let raw = json_object_iterator_get_key(&current, &size)
             _ = json_object_iterator_get_value(&current, &value)
@@ -190,7 +193,7 @@ extension JSON {
     }
 
     @inline(__always)
-    func forEach(inArray method: (JSONValue) -> Void) {
+    func forEach(inArray method: (json_value) -> Void) {
         guard var root = arrayRoot else {
             return
         }
@@ -198,7 +201,7 @@ extension JSON {
     }
 
     @inline(__always)
-    func forEach(inObject method: (String, JSONValue) -> Void) {
+    func forEach(inObject method: (String, json_value) -> Void) {
         guard var root = objectRoot else {
             return
         }
@@ -363,21 +366,25 @@ extension JSON {
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T>(key: String, map method: (JSON) -> T) -> [String: T] {
         item(key: key).decoded(map: method)
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T>(key: String, compactMap method: (JSON) -> T?) -> [String: T] {
         item(key: key).decoded(compactMap: method)
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T, Key>(key: Key, map method: (JSON) -> T) -> [String: T] where Key: CodingKey {
         item(key: key).decoded(map: method)
     }
 
     @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T, Key>(key: Key, compactMap method: (JSON) -> T?) -> [String: T] where Key: CodingKey {
         item(key: key).decoded(compactMap: method)
     }
@@ -487,10 +494,10 @@ extension JSON: TypeNotation {
             if !json_is_array(ref) {
                 return JSON.null
             }
-            var array = JSONArray()
+            var array = json_array()
             _ = json_get_array(ref, &array)
             if index >= 0 && index <= json_array_get_count(&array) {
-                var value = JSONValue()
+                var value = json_value()
                 _ = json_array_get(&array, index, &value)
                 return JSON(storage: storage, value: value)
             } else {
@@ -504,8 +511,8 @@ extension JSON: TypeNotation {
             if !json_is_object(ref) {
                 return JSON.null
             }
-            var object = JSONObject()
-            var value = JSONValue()
+            var object = json_object()
+            var value = json_value()
             _ = json_get_object(ref, &object)
             if json_object_get(&object, key, &value) == JSONParseErrorCode.success {
                 return JSON(storage: storage, value: value)
@@ -589,6 +596,7 @@ extension JSON {
 }
 
 extension JSON: CustomStringConvertible {
+    /// - Warning: Unstable
     @inlinable
     public var rawString: String {
         String(data: encoded(), encoding: .utf8) ?? ""

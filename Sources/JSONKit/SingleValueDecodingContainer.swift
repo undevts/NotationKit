@@ -4,9 +4,9 @@
 
 struct _SingleValueDecodingContainer: SingleValueDecodingContainer, JSONContainer {
     private var context: _Decoder.Context
-    let value: JSONValue
+    let value: json_value
 
-    init(_ context: _Decoder.Context, _ value: JSONValue) {
+    init(_ context: _Decoder.Context, _ value: json_value) {
         self.context = context
         self.value = value
     }

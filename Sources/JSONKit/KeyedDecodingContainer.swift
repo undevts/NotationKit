@@ -5,9 +5,9 @@
 struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: CodingKey {
     private var context: _Decoder.Context
     private(set) var codingPath: [CodingKey]
-    let ref: JSONObject
+    let ref: json_object
 
-    init(_ context: _Decoder.Context, _ value: JSONValue) {
+    init(_ context: _Decoder.Context, _ value: json_value) {
         self.context = context
         ref = _decodeObject(value)
         codingPath = context.codingPath
@@ -35,7 +35,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
 
     @_transparent
     func value(of key: Key) throws -> SimdDecoder {
-        var value = JSONValue()
+        var value = json_value()
         let code = with(ref) { r in
             json_object_get(r, key.stringValue, &value)
         }
@@ -48,7 +48,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
 
     @_transparent
     func optionalValue(of key: Key) throws -> SimdDecoder? {
-        var value = JSONValue()
+        var value = json_value()
         let code = with(ref) { r in
             json_object_get(r, key.stringValue, &value)
         }
@@ -119,7 +119,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     }
 
     func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T: Decodable {
-        var value = JSONValue()
+        var value = json_value()
         let code = with(ref) { r in
             json_object_get(r, key.stringValue, &value)
         }
@@ -187,7 +187,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     }
 
     func decodeIfPresent<T>(_ type: T.Type, forKey key: Key) throws -> T? where T: Decodable {
-        var value = JSONValue()
+        var value = json_value()
         let code = with(ref) { r in
             json_object_get(r, key.stringValue, &value)
         }
@@ -199,7 +199,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
 
     func nestedContainer<NestedKey>(keyedBy type: NestedKey.Type, forKey key: Key) throws ->
         KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
-        var value = JSONValue()
+        var value = json_value()
         let code = with(ref) { r in
             json_object_get(r, key.stringValue, &value)
         }
@@ -212,7 +212,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     }
 
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
-        var value = JSONValue()
+        var value = json_value()
         let code = with(ref) { r in
             json_object_get(r, key.stringValue, &value)
         }
@@ -230,7 +230,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     /// - Returns: A new `Decoder` to pass to `super.init(from:)`.
     /// - Throws: A `DecodingError` error.
     func superDecoder() throws -> Decoder {
-        var value = JSONValue()
+        var value = json_value()
         let code = with(ref) { r in
             json_object_get(r, "super", &value)
         }
@@ -242,7 +242,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     }
 
     func superDecoder(forKey key: Key) throws -> Decoder {
-        var value = JSONValue()
+        var value = json_value()
         let code = with(ref) { r in
             json_object_get(r, key.stringValue, &value)
         }
@@ -255,9 +255,9 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
 }
 
 @inline(__always)
-private func _decodeObject(_ value: JSONValue) -> JSONObject {
+private func _decodeObject(_ value: json_value) -> json_object {
     with(value) { ref in
-        var object = JSONObject()
+        var object = json_object()
         // TODO: Error check.
         _ = json_get_object(ref, &object)
         return object

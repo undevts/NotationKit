@@ -19,15 +19,46 @@ extension StringKeyedJSON {
     @inlinable
     public mutating func decoded<T>(key: String, as type: T.Type) -> T where T: JSONDecodable {
         T.init(item(key: key))
-% else:
-    public mutating func decoded(key: String) -> ${type} {
-        item(key: key).${value}
-% end
     }
 
     @inlinable
+    public mutating func decoded<T>(key: String, map method: (JSON) -> T) -> [T] {
+        item(key: key).decoded(map: method)
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: String, compactMap method: (JSON) -> T?) -> [T] {
+        item(key: key).decoded(compactMap: method)
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: String, map method: (JSON) -> T) -> [String: T] {
+        item(key: key).decoded(map: method)
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: String, compactMap method: (JSON) -> T?) -> [String: T] {
+        item(key: key).decoded(compactMap: method)
+    }
+% else:
+    public mutating func decoded(key: String) -> ${type} {
+        item(key: key).${value}
+    }
+
+    @inlinable
+    public mutating func decoded(key: String) -> [${type}] {
+        item(key: key).decoded(map: \.${value})
+    }
+
+    @inlinable
+    public mutating func decoded(key: String) -> [String: ${type}] {
+        item(key: key).decoded(map: \.${value})
+    }
+% end
+
+    @inlinable
 % if type == 'T':
-    public mutating func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T? where T: JSONFailable {
+    public mutating func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T where T: JSONFailable {
         T.init(item(key: key)) ?? `default`()
 % else:
     public mutating func decoded(key: String, `default`: @autoclosure () -> ${type}) -> ${type} {
@@ -65,11 +96,42 @@ extension KeyedJSON {
     @inlinable
     public mutating func decoded<T>(key: Key, as type: T.Type) -> T where T: JSONDecodable {
         T.init(item(key: key))
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: Key, map method: (JSON) -> T) -> [T] {
+        item(key: key).decoded(map: method)
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: Key, compactMap method: (JSON) -> T?) -> [T] {
+        item(key: key).decoded(compactMap: method)
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: Key, map method: (JSON) -> T) -> [String: T] {
+        item(key: key).decoded(map: method)
+    }
+
+    @inlinable
+    public mutating func decoded<T>(key: Key, compactMap method: (JSON) -> T?) -> [String: T] {
+        item(key: key).decoded(compactMap: method)
+    }
 % else:
     public mutating func decoded(key: Key) -> ${type} {
         item(key: key).${value}
-% end
     }
+
+    @inlinable
+    public mutating func decoded(key: Key) -> [${type}] {
+        item(key: key).decoded(map: \.${value})
+    }
+
+    @inlinable
+    public mutating func decoded(key: Key) -> [String: ${type}] {
+        item(key: key).decoded(map: \.${value})
+    }
+% end
 
     @inlinable
 % if type == 'T':

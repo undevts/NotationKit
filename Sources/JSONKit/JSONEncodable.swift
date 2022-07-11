@@ -1,4 +1,4 @@
-import Foundation
+import Foundation // Data
 
 public typealias JSONCodable = JSONEncodable & JSONDecodable
 

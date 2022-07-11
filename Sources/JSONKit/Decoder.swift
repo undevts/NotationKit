@@ -6,7 +6,7 @@ import Foundation
 
 struct _Decoder: Decoder, JSONContainer {
     private let context: Context
-    let value: JSONValue
+    let value: json_value
 
     @inline(__always)
     var codingPath: [CodingKey] {
@@ -30,7 +30,7 @@ struct _Decoder: Decoder, JSONContainer {
     }
 
     @_transparent
-    init(context: Context, value: JSONValue) {
+    init(context: Context, value: json_value) {
         self.context = context
         self.value = value
     }
@@ -81,7 +81,7 @@ struct _Decoder: Decoder, JSONContainer {
         }
 
         @inline(__always)
-        func makeDecoder(_ value: JSONValue) -> _Decoder {
+        func makeDecoder(_ value: json_value) -> _Decoder {
             _Decoder(context: self, value: value)
         }
     }

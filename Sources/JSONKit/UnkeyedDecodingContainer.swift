@@ -8,15 +8,15 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer, JSONContainer {
     private var context: _Decoder.Context
     private var _count: Int
     private var _index: Int = 0
-    private let ref: JSONArray
-    private var current: JSONArrayIterator
+    private let ref: json_array
+    private var current: json_array_iterator
     private(set) var codingPath: [CodingKey]
-    private(set) var value: JSONValue
+    private(set) var value: json_value
 
-    init(_ context: _Decoder.Context, _ value: JSONValue) {
-        var array = JSONArray()
-        var current = JSONArrayIterator()
-        var v = JSONValue()
+    init(_ context: _Decoder.Context, _ value: json_value) {
+        var array = json_array()
+        var current = json_array_iterator()
+        var v = json_value()
         let count = _decodeArray(value, array: &array)
         json_array_get_begin_iterator(&array, &current)
         if count > 0 {
@@ -348,7 +348,7 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer, JSONContainer {
 
 // array, size, first
 @_transparent
-private func _decodeArray(_ value: JSONValue, array: inout JSONArray) -> Int {
+private func _decodeArray(_ value: json_value, array: inout json_array) -> Int {
     var size = 0
     with(value) { ref in
         _ = json_get_array(ref, &array)
@@ -358,8 +358,8 @@ private func _decodeArray(_ value: JSONValue, array: inout JSONArray) -> Int {
 }
 
 @_transparent
-func with<Result>(_ value: JSONArrayIterator, _ method: (JSONArrayIteratorRef) throws -> Result) rethrows -> Result {
-    try withUnsafePointer(to: value) { (pointer: UnsafePointer<JSONArrayIterator>) -> Result in
+func with<Result>(_ value: json_array_iterator, _ method: (JSONArrayIteratorRef) throws -> Result) rethrows -> Result {
+    try withUnsafePointer(to: value) { (pointer: UnsafePointer<json_array_iterator>) -> Result in
         try method(UnsafeMutablePointer(mutating: pointer))
     }
 }
