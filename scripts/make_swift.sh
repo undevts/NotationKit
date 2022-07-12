@@ -6,7 +6,8 @@ gyb() {
   ./scripts/gyb.py "$1" --line-directive "" > "$DIR/$FILE"
 }
 
-gyb Sources/JSONKit/JSONStream+Write.swift.gyb
-gyb Sources/JSONKit/JSON+Decoded.swift.gyb
-gyb Sources/JSONKit/JSON+KeyedDecoded.swift.gyb
-gyb Tests/JSONKitTests/JSONStreamTests+Write.swift.gyb
+gyb Sources/JSONBuildKit/BuildTypes.swift.gyb
+#gyb Sources/JSONKit/JSON+Decoded.swift.gyb
+#gyb Sources/JSONKit/JSON+KeyedDecoded.swift.gyb
+#gyb Sources/JSONKit/JSONStream+Write.swift.gyb
+#gyb Tests/JSONKitTests/JSONStreamTests+Write.swift.gyb

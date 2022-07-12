@@ -267,7 +267,6 @@ extension JSON {
         return result
     }
 
-
     /// Decode current value as a dictionary and calls the transform method on each JSON value in it.
     ///
     /// Same as `json.dictionary.map(method)` but more efficient.

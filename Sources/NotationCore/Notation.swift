@@ -121,7 +121,7 @@ public protocol Notation {
     /// - Parameter index: The position of the element to access.
     /// - Returns: A value on the `index` or a not exists value if the `index` is out of bounds.
     subscript(untyped index: Int) -> Notation { get }
-    
+
     /// Accesses the value associated with the given key.
     /// Same as `item(untyped: key)`.
     ///

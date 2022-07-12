@@ -1,0 +1,33 @@
+%{
+keys = ['Int', 'Int32', 'Int64', 'UInt', 'UInt32', 'UInt64', 'Double', 'Float', 'Bool', 'String', 'T']
+types = {
+'Int': 'int', 'Int32': 'int32', 'Int64': 'int64',
+'UInt': 'uint', 'UInt32': 'uint32', 'UInt64': 'uint64',
+'Double': 'double', 'Float': 'float', 'Bool': 'bool',
+'String': 'string', 'T': 't'
+}
+}%
+extension List {
+% for type in keys:
+%   value = types[type]
+    @inlinable
+% if type == 'T':
+    public init<Data>(_ data: Data)
+        where Content == ForEach<Data, WrapComponent<Data.Element>>, Data: RandomAccessCollection,
+        Data.Element: JSONEncodable {
+        content = ForEach(data) { element in
+            WrapComponent(element)
+        }
+    }
+
+% else:
+    public init<Data>(_ data: Data)
+        where Content == ForEach<Data, ValueComponent>, Data: RandomAccessCollection, Data.Element == ${type} {
+        content = ForEach(data) { element in
+            ValueComponent(element)
+        }
+    }
+
+% end
+% end
+}

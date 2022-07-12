@@ -1,6 +1,17 @@
 // swift-tools-version: 5.6
 
+import Foundation // For ProcessInfo
 import PackageDescription
+
+var support_iOS_9 = true
+
+if ProcessInfo.processInfo.environment["JSON_BUILDER_NOT_SUPPORT_IOS_9"] != nil {
+    support_iOS_9 = false
+}
+
+let swiftSettings: [SwiftSetting] = [
+    .define(support_iOS_9 ? "JSON_BUILDER_SUPPORT_IOS_9" : "JSON_BUILDER_NOT_SUPPORT_IOS_9")
+]
 
 let package = Package(
     name: "NotationKit",
@@ -11,6 +22,9 @@ let package = Package(
         .library(
             name: "JSONKit",
             targets: ["JSONKit"]),
+        .library(
+            name: "JSONBuildKit",
+            targets: ["JSONBuildKit"]),
         .library(
             name: "AnyNotationKit",
             targets: ["AnyNotationKit"]),
@@ -53,8 +67,15 @@ let package = Package(
             ],
             exclude: [
                 "JSON+Decoded.swift.gyb",
+                "JSON+KeyedDecoded.swift.gyb",
                 "JSONStream+Write.swift.gyb",
             ]),
+        .target(
+            name: "JSONBuildKit",
+            dependencies: [
+                "JSONKit",
+            ],
+            swiftSettings: swiftSettings),
         .target(
             name: "AnyNotationKit",
             dependencies: [
@@ -77,6 +98,12 @@ let package = Package(
                 "AnyNotationKit",
                 "AnyNotationKitTestsSupport",
             ]),
+        .testTarget(
+            name: "JSONBuildKitTests",
+            dependencies: [
+                "JSONBuildKit",
+            ],
+            swiftSettings: swiftSettings),
     ],
     cLanguageStandard: .c11,
     cxxLanguageStandard: .cxx17

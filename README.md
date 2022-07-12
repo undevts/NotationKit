@@ -12,6 +12,10 @@ The fastest Swift decoding & encoding framework.
 
     The JSON related encoders and decoders.
 
++ JSONBuilerKit
+
+    The `SwiftUI` API style JSON builer.
+
 + AnyNotationKit (WIP)
 
     The toolkit to dealing with `[AnyHashable: Any]`.
@@ -38,6 +42,8 @@ Notation kit only available with SPM:
 
 ## Common tasks
 
+### Decoding from JSON
+
 To decoding an entity from JSON string or data,
 a class or struct just needs to implement the `JSONDecodable` protocol.
 
@@ -58,11 +64,11 @@ struct User: JSONDecodable {
     
     init(_ json: JSON) {
         var keyed = json.keyed()
-        username = keyed.decoded("username")
-        age = keyed.decoded("age")
-        array = keyed.decoded("list")
-        dictionary = keyed.decoded("map")
-        friends = keyed.decoded("friends")
+        username = keyed.decoded(key: "username")
+        age = keyed.decoded(key: "age")
+        array = keyed.decoded(key: "list")
+        dictionary = keyed.decoded(key: "map")
+        friends = keyed.decoded(key: "friends")
     }
 }
 
@@ -76,11 +82,11 @@ struct User: JSONDecodable {
 
     init(_ json: JSON) {
         var keyed = json.keyed(by: CodingKeys.self)
-        username = keyed.decoded(.username)
-        age = keyed.decoded(.age)
-        array = keyed.decoded(.array)
-        dictionary = keyed.decoded(.dictionary)
-        friends = keyed.decoded(.friends)
+        username = keyed.decoded(key: .username)
+        age = keyed.decoded(key: .age)
+        array = keyed.decoded(key: .array)
+        dictionary = keyed.decoded(key: .dictionary)
+        friends = keyed.decoded(key: .friends)
     }
     
     enum CodingKeys: String, CodingKey {
@@ -98,6 +104,10 @@ Now, we can convert a JSON data to the `User` model with a single line code.
 ```swift
 let result: Result<User, JSONParseError> = JSON.parse(data, as: User.self)
 ```
+
+### Encoding to JSON
+
+
 
 ## Use the JSON decoding API
 
