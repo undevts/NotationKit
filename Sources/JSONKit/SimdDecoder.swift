@@ -22,12 +22,12 @@ struct SimdDecoder: JSONContainer {
 
     @_transparent
     var isNull: Bool {
-        with(json_is_null)
+        with(nk_json_is_null)
     }
 
     @_transparent
     var kind: JSONType {
-        with(json_get_type)
+        with(nk_json_get_type)
     }
 
     @inline(__always)
@@ -54,7 +54,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(Bool.self, codingPath,
                 "Expected Bool but found JSONType.null instead.")
         case .bool:
-            let (result, code) = with(json_get_bool)
+            let (result, code) = with(nk_json_get_bool)
             if code == .success {
                 return result
             } else {
@@ -76,7 +76,7 @@ struct SimdDecoder: JSONContainer {
             var code = JSONParseErrorCode.success
             var size: Int = 0
             let result = with { ref in
-                json_get_string(ref, &size, &code)
+                nk_json_get_string(ref, &size, &code)
             }
             if code == .success, let result = result.map(UnsafeMutablePointer.init(mutating:)) {
                 let data = Data(bytesNoCopy: result, count: size, deallocator: .none)
@@ -97,7 +97,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(Double.self, codingPath,
                 "Expected Double but found JSONType.null instead.")
         case .double, .uint64, .int64:
-            let (result, code) = with(json_get_double)
+            let (result, code) = with(nk_json_get_double)
             if code == .success {
                 return result
             } else {
@@ -116,7 +116,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(Bool.self, codingPath,
                 "Expected Float but found JSONType.null instead.")
         case .double, .uint64, .int64:
-            let (result, code) = with(json_get_double)
+            let (result, code) = with(nk_json_get_double)
             if code == .success {
                 return Float(result)
             } else {
@@ -135,7 +135,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(Int.self, codingPath,
                 "Expected Int but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 if let result = Int(exactly: result) {
                     return result
@@ -159,7 +159,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(Int8.self, codingPath,
                 "Expected Int8 but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 if let result = Int8(exactly: result) {
                     return result
@@ -183,7 +183,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(Int16.self, codingPath,
                 "Expected Int16 but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 if let result = Int16(exactly: result) {
                     return result
@@ -207,7 +207,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(Int32.self, codingPath,
                 "Expected Int32 but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 if let result = Int32(exactly: result) {
                     return result
@@ -231,7 +231,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(Int64.self, codingPath,
                 "Expected Int64 but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 return result
             } else {
@@ -250,7 +250,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(UInt.self, codingPath,
                 "Expected UInt but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 if let result = UInt(exactly: result) {
                     return result
@@ -274,7 +274,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(UInt8.self, codingPath,
                 "Expected UInt8 but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 if let result = UInt8(exactly: result) {
                     return result
@@ -298,7 +298,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(UInt16.self, codingPath,
                 "Expected UInt16 but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 if let result = UInt16(exactly: result) {
                     return result
@@ -322,7 +322,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(UInt32.self, codingPath,
                 "Expected UInt32 but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 if let result = UInt32(exactly: result) {
                     return result
@@ -346,7 +346,7 @@ struct SimdDecoder: JSONContainer {
             throw valueNotFound(UInt64.self, codingPath,
                 "Expected UInt64 but found JSONType.null instead.")
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 return result
             } else {
@@ -364,7 +364,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .bool:
-            let (result, code) = with(json_get_bool)
+            let (result, code) = with(nk_json_get_bool)
             if code == .success {
                 return result
             } else {
@@ -385,7 +385,7 @@ struct SimdDecoder: JSONContainer {
             var code = JSONParseErrorCode.success
             var size: Int = 0
             let result = with { ref in
-                json_get_string(ref, &size, &code)
+                nk_json_get_string(ref, &size, &code)
             }
             if code == .success, let result = result.map(UnsafeMutablePointer.init(mutating:)) {
                 let data = Data(bytesNoCopy: result, count: size, deallocator: .none)
@@ -405,7 +405,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .double, .uint64, .int64:
-            let (result, code) = with(json_get_double)
+            let (result, code) = with(nk_json_get_double)
             if code == .success {
                 return result
             } else {
@@ -423,7 +423,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .double, .uint64, .int64:
-            let (result, code) = with(json_get_double)
+            let (result, code) = with(nk_json_get_double)
             if code == .success {
                 return Float(result)
             } else {
@@ -441,7 +441,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 if let result = Int(exactly: result) {
                     return result
@@ -464,7 +464,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 if let result = Int8(exactly: result) {
                     return result
@@ -487,7 +487,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 if let result = Int16(exactly: result) {
                     return result
@@ -510,7 +510,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 if let result = Int32(exactly: result) {
                     return result
@@ -533,7 +533,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_int64)
+            let (result, code) = with(nk_json_get_int64)
             if code == .success {
                 return result
             } else {
@@ -551,7 +551,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 if let result = UInt(exactly: result) {
                     return result
@@ -574,7 +574,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 if let result = UInt8(exactly: result) {
                     return result
@@ -597,7 +597,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 if let result = UInt16(exactly: result) {
                     return result
@@ -620,7 +620,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 if let result = UInt32(exactly: result) {
                     return result
@@ -643,7 +643,7 @@ struct SimdDecoder: JSONContainer {
         case .null:
             return nil
         case .uint64, .int64, .double:
-            let (result, code) = with(json_get_uint64)
+            let (result, code) = with(nk_json_get_uint64)
             if code == .success {
                 return result
             } else {
@@ -659,7 +659,7 @@ struct SimdDecoder: JSONContainer {
 @inline(__always)
 func description(of value: json_value) -> String {
     with(value) { ref in
-        switch json_get_type(ref) {
+        switch nk_json_get_type(ref) {
         case .null:
             return "JSONType.null"
         case .bool:
@@ -682,7 +682,7 @@ func description(of value: json_value) -> String {
 
 @_transparent
 func message(of value: JSONParseErrorCode) -> String {
-    String(cString: json_error_message(value))
+    String(cString: nk_json_error_message(value))
 }
 
 @_transparent

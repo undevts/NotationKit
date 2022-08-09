@@ -192,7 +192,7 @@ extension JSONStream {
     @inline(__always)
     mutating func _writeInt32(_ value: Int32) {
         var buffer = json_number_32()
-        let size = json_write_int32(&buffer, value)
+        let size = nk_nk_json_write_int32(&buffer, value)
         buffer.write(to: &data, size: size)
     }
 
@@ -200,7 +200,7 @@ extension JSONStream {
     @inline(__always)
     mutating func _writeUInt32(_ value: UInt32) {
         var buffer = json_number_32()
-        let size = json_write_uint32(&buffer, value)
+        let size = nk_nk_json_write_uint32(&buffer, value)
         buffer.write(to: &data, size: size)
     }
 
@@ -208,7 +208,7 @@ extension JSONStream {
     @inline(__always)
     mutating func _writeInt64(_ value: Int64) {
         var buffer = json_number_64()
-        let size = json_write_int64(&buffer, value)
+        let size = nk_nk_json_write_int64(&buffer, value)
         buffer.write(to: &data, size: size)
     }
 
@@ -216,7 +216,7 @@ extension JSONStream {
     @inline(__always)
     mutating func _writeUInt64(_ value: UInt64) {
         var buffer = json_number_64()
-        let size = json_write_uint64(&buffer, value)
+        let size = nk_nk_json_write_uint64(&buffer, value)
         buffer.write(to: &data, size: size)
     }
 
@@ -245,7 +245,7 @@ extension JSONStream {
                 return false
             }
             let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 2 + value.utf8.count * 6) // "\uxxxx...")
-            let size = json_write_string(buffer, base, pointer.count)
+            let size = nk_nk_json_write_string(buffer, base, pointer.count)
             put(bytes: buffer, count: size)
             buffer.deallocate()
             return true
@@ -255,7 +255,7 @@ extension JSONStream {
         }
         value.withCString { pointer in
             let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 2 + value.utf8.count * 6) // "\uxxxx...")
-            let size = json_write_string(buffer, pointer, strlen(pointer))
+            let size = nk_nk_json_write_string(buffer, pointer, strlen(pointer))
             put(bytes: buffer, count: size)
             buffer.deallocate()
         }

@@ -4,7 +4,7 @@
 
 using namespace simdjson;
 
-NSArray<NSString*>* json_object_get_all_keys(JSONObjectRef ref) {
+NSArray<NSString*>* nk_json_object_get_all_keys(JSONObjectRef ref) {
     if (UNLIKELY(ref == nullptr)) {
         return @[];
     }

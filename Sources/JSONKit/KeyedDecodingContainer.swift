@@ -20,7 +20,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     var allKeys: [Key] {
 #if canImport(ObjectiveC)
         return with(ref) { r in
-            json_object_get_all_keys(r).compactMap(Key.init(stringValue:))
+            nk_json_object_get_all_keys(r).compactMap(Key.init(stringValue:))
         }
 #else
         return with(ref, decodeAllKeys).compactMap(Key.init(stringValue:))
@@ -29,7 +29,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
 
     func contains(_ key: Key) -> Bool {
         with(ref) { r in
-            json_object_contains(r, key.stringValue)
+            nk_json_object_contains(r, key.stringValue)
         }
     }
 
@@ -37,7 +37,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     func value(of key: Key) throws -> SimdDecoder {
         var value = json_value()
         let code = with(ref) { r in
-            json_object_get(r, key.stringValue, &value)
+            nk_json_object_get(r, key.stringValue, &value)
         }
         if code == .noSuchField {
             throw keyNotFound(key, codingPath,
@@ -50,7 +50,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     func optionalValue(of key: Key) throws -> SimdDecoder? {
         var value = json_value()
         let code = with(ref) { r in
-            json_object_get(r, key.stringValue, &value)
+            nk_json_object_get(r, key.stringValue, &value)
         }
         if code == .noSuchField {
             return nil
@@ -121,7 +121,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     func decode<T>(_ type: T.Type, forKey key: Key) throws -> T where T: Decodable {
         var value = json_value()
         let code = with(ref) { r in
-            json_object_get(r, key.stringValue, &value)
+            nk_json_object_get(r, key.stringValue, &value)
         }
         if code == .noSuchField {
             throw keyNotFound(key, codingPath,
@@ -189,7 +189,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     func decodeIfPresent<T>(_ type: T.Type, forKey key: Key) throws -> T? where T: Decodable {
         var value = json_value()
         let code = with(ref) { r in
-            json_object_get(r, key.stringValue, &value)
+            nk_json_object_get(r, key.stringValue, &value)
         }
         if code == .noSuchField {
             return nil
@@ -201,7 +201,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
         KeyedDecodingContainer<NestedKey> where NestedKey: CodingKey {
         var value = json_value()
         let code = with(ref) { r in
-            json_object_get(r, key.stringValue, &value)
+            nk_json_object_get(r, key.stringValue, &value)
         }
         if code == .noSuchField {
             throw keyNotFound(key, codingPath,
@@ -214,7 +214,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     func nestedUnkeyedContainer(forKey key: Key) throws -> UnkeyedDecodingContainer {
         var value = json_value()
         let code = with(ref) { r in
-            json_object_get(r, key.stringValue, &value)
+            nk_json_object_get(r, key.stringValue, &value)
         }
         if code == .noSuchField {
             throw keyNotFound(key, codingPath,
@@ -232,7 +232,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     func superDecoder() throws -> Decoder {
         var value = json_value()
         let code = with(ref) { r in
-            json_object_get(r, "super", &value)
+            nk_json_object_get(r, "super", &value)
         }
         if code == .noSuchField {
             throw keyNotFound("super" as AnyCodingKey, codingPath,
@@ -244,7 +244,7 @@ struct _KeyedDecodingContainer<Key>: KeyedDecodingContainerProtocol where Key: C
     func superDecoder(forKey key: Key) throws -> Decoder {
         var value = json_value()
         let code = with(ref) { r in
-            json_object_get(r, key.stringValue, &value)
+            nk_json_object_get(r, key.stringValue, &value)
         }
         if code == .noSuchField {
             throw keyNotFound(key, codingPath,
@@ -259,7 +259,7 @@ private func _decodeObject(_ value: json_value) -> json_object {
     with(value) { ref in
         var object = json_object()
         // TODO: Error check.
-        _ = json_get_object(ref, &object)
+        _ = nk_json_get_object(ref, &object)
         return object
     }
 }

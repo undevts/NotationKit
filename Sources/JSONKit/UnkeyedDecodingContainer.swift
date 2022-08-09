@@ -18,9 +18,9 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer, JSONContainer {
         var current = json_array_iterator()
         var v = json_value()
         let count = _decodeArray(value, array: &array)
-        json_array_get_begin_iterator(&array, &current)
+        nk_json_array_get_begin_iterator(&array, &current)
         if count > 0 {
-            json_array_iterator_get_value(&current, &v)
+            nk_json_array_iterator_get_value(&current, &v)
         }
 
         self.context = context
@@ -57,8 +57,8 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer, JSONContainer {
         guard _index < _count else {
             return
         }
-        json_array_iterator_move_next(&current)
-        json_array_iterator_get_value(&current, &value)
+        nk_json_array_iterator_move_next(&current)
+        nk_json_array_iterator_get_value(&current, &value)
     }
 
     @_transparent
@@ -351,8 +351,8 @@ struct _UnkeyedDecodingContainer: UnkeyedDecodingContainer, JSONContainer {
 private func _decodeArray(_ value: json_value, array: inout json_array) -> Int {
     var size = 0
     with(value) { ref in
-        _ = json_get_array(ref, &array)
-        size = json_array_get_count(&array)
+        _ = nk_json_get_array(ref, &array)
+        size = nk_json_array_get_count(&array)
     }
     return size
 }

@@ -14,7 +14,7 @@ public struct JSONParseError: Error, LocalizedError {
     }
 
     public var errorDescription: String? {
-        String(cString: json_error_message(code))
+        String(cString: nk_json_error_message(code))
     }
 }
 
@@ -29,7 +29,7 @@ public struct JSONParseError: Error, LocalizedError {
 /// An object representing a JSON value, array or object.
 public final class JSON {
     /// A static property that represents JSON null value.
-    public static let null = JSON(ref: json_create_null())
+    public static let null = JSON(ref: nk_json_create_null())
 
     @usableFromInline
     let storage: JSONStorage
@@ -55,7 +55,7 @@ public final class JSON {
 /// A JSON value, array or object.
 public struct JSON {
     /// A static property that represents JSON null value.
-    public static let null = JSON(ref: json_create_null())
+    public static let null = JSON(ref: nk_json_create_null())
 
     @usableFromInline
     let storage: JSONStorage
@@ -82,24 +82,24 @@ public struct JSON {
 extension JSON {
     /// The type of current root JSON value.
     public var type: JSONType {
-        with(value, json_get_type)
+        with(value, nk_json_get_type)
     }
 
     /// A bool value indicating whether current value is null.
     public var isNull: Bool {
-        with(value, json_is_null)
+        with(value, nk_json_is_null)
     }
 
     @usableFromInline
     var isNumber: Bool {
-        with(value, json_is_number)
+        with(value, nk_json_is_number)
     }
 
     @inline(__always)
     var arrayRoot: json_array? {
         with(value) { ref in
             var root = json_array()
-            if json_get_array(ref, &root) == JSONParseErrorCode.success {
+            if nk_json_get_array(ref, &root) == JSONParseErrorCode.success {
                 return root
             }
             return nil
@@ -111,7 +111,7 @@ extension JSON {
     var objectRoot: json_object? {
         with(value) { ref in
             var root = json_object()
-            if json_get_object(ref, &root) == JSONParseErrorCode.success {
+            if nk_json_get_object(ref, &root) == JSONParseErrorCode.success {
                 return root
             }
             return nil
@@ -147,28 +147,28 @@ extension JSON {
 
     @inline(__always)
     func count(of array: inout json_array) -> Int {
-        json_array_get_count(&array)
+        nk_json_array_get_count(&array)
     }
 
     @inline(__always)
     func count(of object: inout json_object) -> Int {
-        json_object_get_count(&object)
+        nk_json_object_get_count(&object)
     }
 
     @inline(__always)
     func forEach(in array: inout json_array, _ method: (json_value) -> Void) {
         var current = json_array_iterator()
         var end = json_array_iterator()
-        json_array_get_begin_iterator(&array, &current)
-        json_array_get_end_iterator(&array, &end)
-        if json_array_iterator_is_equal(&current, &end) {
+        nk_json_array_get_begin_iterator(&array, &current)
+        nk_json_array_get_end_iterator(&array, &end)
+        if nk_json_array_iterator_is_equal(&current, &end) {
             return
         }
         var value = json_value()
-        while !json_array_iterator_is_equal(&current, &end) {
-            _ = json_array_iterator_get_value(&current, &value)
+        while !nk_json_array_iterator_is_equal(&current, &end) {
+            _ = nk_json_array_iterator_get_value(&current, &value)
             method(value)
-            json_array_iterator_move_next(&current)
+            nk_json_array_iterator_move_next(&current)
         }
     }
 
@@ -176,23 +176,23 @@ extension JSON {
     func forEach(in object: inout json_object, _ method: (String, json_value) -> Void) {
         var current = json_object_iterator()
         var end = json_object_iterator()
-        json_object_get_begin_iterator(&object, &current)
-        json_object_get_end_iterator(&object, &end)
-        if json_object_iterator_is_equal(&current, &end) {
+        nk_json_object_get_begin_iterator(&object, &current)
+        nk_json_object_get_end_iterator(&object, &end)
+        if nk_json_object_iterator_is_equal(&current, &end) {
             return
         }
         var size = 0
         var value = json_value()
-        while !json_object_iterator_is_equal(&current, &end) {
-            let raw = json_object_iterator_get_key(&current, &size)
-            _ = json_object_iterator_get_value(&current, &value)
+        while !nk_json_object_iterator_is_equal(&current, &end) {
+            let raw = nk_json_object_iterator_get_key(&current, &size)
+            _ = nk_json_object_iterator_get_value(&current, &value)
             // TODO: use size
             if let raw = raw, size > 0 {
                 method(String(cString: raw), value)
             } else {
                 method("", value)
             }
-            json_object_iterator_move_next(&current)
+            nk_json_object_iterator_move_next(&current)
         }
     }
 
@@ -425,14 +425,14 @@ extension JSON: TypeNotation {
 
     public var bool: Bool {
         with(value) { ref in
-            json_get_bool(ref, nil)
+            nk_json_get_bool(ref, nil)
         }
     }
 
     public var string: String {
         with(value) { ref in
             var size = 0
-            let out = json_get_string(ref, &size, nil)
+            let out = nk_json_get_string(ref, &size, nil)
             if let out = out, size > 0 {
                 // TODO: use size
                 return String(cString: out)
@@ -443,50 +443,50 @@ extension JSON: TypeNotation {
 
     public var double: Double {
         with(value) { ref in
-            json_get_double(ref, nil)
+            nk_json_get_double(ref, nil)
         }
     }
 
     public var float: Float {
         with(value) { ref -> Float in
-            let result = json_get_double(ref, nil)
+            let result = nk_json_get_double(ref, nil)
             return Float(result)
         }
     }
 
     public var int: Int {
         with(value) { ref in
-            json_get_int(ref, nil)
+            nk_json_get_int(ref, nil)
         }
     }
 
     public var int32: Int32 {
         with(value) { ref in
-            json_get_int32(ref, nil)
+            nk_json_get_int32(ref, nil)
         }
     }
 
     public var int64: Int64 {
         with(value) { ref in
-            json_get_int64(ref, nil)
+            nk_json_get_int64(ref, nil)
         }
     }
 
     public var uint: UInt {
         with(value) { ref in
-            json_get_uint(ref, nil)
+            nk_json_get_uint(ref, nil)
         }
     }
 
     public var uint32: UInt32 {
         with(value) { ref in
-            json_get_uint32(ref, nil)
+            nk_json_get_uint32(ref, nil)
         }
     }
 
     public var uint64: UInt64 {
         with(value) { ref in
-            json_get_uint64(ref, nil)
+            nk_json_get_uint64(ref, nil)
         }
     }
 
@@ -516,14 +516,14 @@ extension JSON: TypeNotation {
 
     public func item(at index: Int) -> JSON {
         with(value) { ref in
-            if !json_is_array(ref) {
+            if !nk_json_is_array(ref) {
                 return JSON.null
             }
             var array = json_array()
-            _ = json_get_array(ref, &array)
-            if index >= 0 && index <= json_array_get_count(&array) {
+            _ = nk_json_get_array(ref, &array)
+            if index >= 0 && index <= nk_json_array_get_count(&array) {
                 var value = json_value()
-                _ = json_array_get(&array, index, &value)
+                _ = nk_json_array_get(&array, index, &value)
                 return JSON(storage: storage, value: value)
             } else {
                 return JSON.null
@@ -533,13 +533,13 @@ extension JSON: TypeNotation {
 
     public func item(key: String) -> JSON {
         with(value) { ref in
-            if !json_is_object(ref) {
+            if !nk_json_is_object(ref) {
                 return JSON.null
             }
             var object = json_object()
             var value = json_value()
-            _ = json_get_object(ref, &object)
-            if json_object_get(&object, key, &value) == JSONParseErrorCode.success {
+            _ = nk_json_get_object(ref, &object)
+            if nk_json_object_get(&object, key, &value) == JSONParseErrorCode.success {
                 return JSON(storage: storage, value: value)
             } else {
                 return JSON.null

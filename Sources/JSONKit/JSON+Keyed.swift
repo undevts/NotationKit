@@ -46,10 +46,10 @@ final class KeyedContainer {
         var root = root
         var start = json_object_iterator()
         var end = json_object_iterator()
-        json_object_get_begin_iterator(&root, &start)
-        json_object_get_end_iterator(&root, &end)
+        nk_json_object_get_begin_iterator(&root, &start)
+        nk_json_object_get_end_iterator(&root, &end)
         self.storage = storage
-        isEmpty = json_object_iterator_is_equal(&start, &end)
+        isEmpty = nk_json_object_iterator_is_equal(&start, &end)
         self.root = root
         self.start = start
         self.end = end
@@ -67,16 +67,16 @@ final class KeyedContainer {
             return JSON(storage: storage, value: cache[index].value)
         }
         // Next find in JSON Object.
-        if json_object_iterator_is_equal(&start, &end) {
+        if nk_json_object_iterator_is_equal(&start, &end) {
             // All key is read but no match.
             return JSON.null
         }
         var size = 0
         var value = json_value()
-        while !json_object_iterator_is_equal(&start, &end) {
-            let raw = json_object_iterator_get_key(&start, &size)
-            _ = json_object_iterator_get_value(&start, &value)
-            json_object_iterator_move_next(&start)
+        while !nk_json_object_iterator_is_equal(&start, &end) {
+            let raw = nk_json_object_iterator_get_key(&start, &size)
+            _ = nk_json_object_iterator_get_value(&start, &value)
+            nk_json_object_iterator_move_next(&start)
             // TODO: use size
             if let raw = raw, size > 0 {
                 let _key = String(cString: raw)

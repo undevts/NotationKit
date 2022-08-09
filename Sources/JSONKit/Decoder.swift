@@ -47,7 +47,7 @@ struct _Decoder: Decoder, JSONContainer {
     }
 
     func container<Key>(keyedBy type: Key.Type) throws -> KeyedDecodingContainer<Key> where Key: CodingKey {
-//        guard json_is_object(value) else {
+//        guard nk_json_is_object(value) else {
 //            throw typeMismatch(Dictionary<String, JSON>.self, codingPath,
 //                "Expected to decode Dictionary<String, JSON> but found \(description(of: value)) instead.")
 //        }
@@ -55,7 +55,7 @@ struct _Decoder: Decoder, JSONContainer {
     }
 
     func unkeyedContainer() throws -> UnkeyedDecodingContainer {
-//        guard json_is_array(value) else {
+//        guard nk_json_is_array(value) else {
 //            throw typeMismatch(Array<JSON>.self, codingPath,
 //                "Expected to decode Array<JSON> but found \(description(of: value)) instead.")
 //        }

@@ -11,7 +11,7 @@ final class JSONStorage {
     @inline(__always)
     var root: json_value {
         var out = json_value()
-        json_get_root(ref, &out)
+        nk_json_get_root(ref, &out)
         return out
     }
 
@@ -21,16 +21,16 @@ final class JSONStorage {
     }
 
     deinit {
-        json_free(ref)
+        nk_json_free(ref)
     }
 
     @usableFromInline
     static func parse(_ value: String) -> Result<JSONStorage, JSONParseError> {
         value.withCString { (buffer: UnsafePointer<Int8>) -> Result<JSONStorage, JSONParseError> in
-            let input = json_input_create(buffer)
+            let input = nk_json_input_create(buffer)
             var code = JSONParseErrorCode.success
-            let ref = json_parse_string(input, &code)
-            json_input_free(input)
+            let ref = nk_json_parse_string(input, &code)
+            nk_json_input_free(input)
             if code == .success, let ref = ref {
                 return .success(JSONStorage(ref: ref))
             } else {
@@ -49,7 +49,7 @@ final class JSONStorage {
                 return .failure(JSONParseError(code: .tape))
             }
             var code = JSONParseErrorCode.success
-            let ref = json_parse_data(buffer, count, &code)
+            let ref = nk_json_parse_data(buffer, count, &code)
             if code == .success, let ref = ref {
                 return .success(JSONStorage(ref: ref))
             } else {

@@ -53,6 +53,7 @@ let package = Package(
             ],
             exclude: [
                 "JSON+Decoded.swift.gyb",
+                "JSON+KeyedDecoded.swift.gyb",
                 "JSONStream+Write.swift.gyb",
             ]),
         .target(
