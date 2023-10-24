@@ -115,11 +115,11 @@ typedef struct json_value {
     uint8_t data[16];
 } json_value;
 
-size_t nk_nk_json_write_int32(json_number_32* CS_NONNULL buffer, int32_t value);
-size_t nk_nk_json_write_uint32(json_number_32* CS_NONNULL buffer, uint32_t value);
-size_t nk_nk_json_write_int64(json_number_64* CS_NONNULL buffer, int64_t value);
-size_t nk_nk_json_write_uint64(json_number_64* CS_NONNULL buffer, uint64_t value);
-size_t nk_nk_json_write_string(char* CS_NONNULL buffer, const char* CS_NONNULL value, size_t size);
+size_t nk_json_write_int32(json_number_32* CS_NONNULL buffer, int32_t value);
+size_t nk_json_write_uint32(json_number_32* CS_NONNULL buffer, uint32_t value);
+size_t nk_json_write_int64(json_number_64* CS_NONNULL buffer, int64_t value);
+size_t nk_json_write_uint64(json_number_64* CS_NONNULL buffer, uint64_t value);
+size_t nk_json_write_string(char* CS_NONNULL buffer, const char* CS_NONNULL value, size_t size);
 
 CS_C_FILE_END
 

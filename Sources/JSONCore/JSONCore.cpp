@@ -2,35 +2,35 @@
 #include <JSONCore.h>
 #include "itoa.hpp"
 
-size_t nk_nk_json_write_int32(json_number_32 *CS_NONNULL buffer, int32_t value) {
+size_t nk_json_write_int32(json_number_32 *CS_NONNULL buffer, int32_t value) {
     assert(buffer != nullptr);
     auto target = reinterpret_cast<char*>(buffer->buffer);
     const auto end = internal::i32toa(value, target);
     return end - target;
 }
 
-size_t nk_nk_json_write_uint32(json_number_32 *CS_NONNULL buffer, uint32_t value) {
+size_t nk_json_write_uint32(json_number_32 *CS_NONNULL buffer, uint32_t value) {
     assert(buffer != nullptr);
     auto target = reinterpret_cast<char*>(buffer->buffer);
     const auto end = internal::u32toa(value, target);
     return end - target;
 }
 
-size_t nk_nk_json_write_int64(json_number_64 *CS_NONNULL buffer, int64_t value) {
+size_t nk_json_write_int64(json_number_64 *CS_NONNULL buffer, int64_t value) {
     assert(buffer != nullptr);
     auto target = reinterpret_cast<char*>(buffer->buffer);
     const auto end = internal::i64toa(value, target);
     return end - target;
 }
 
-size_t nk_nk_json_write_uint64(json_number_64 *CS_NONNULL buffer, uint64_t value) {
+size_t nk_json_write_uint64(json_number_64 *CS_NONNULL buffer, uint64_t value) {
     assert(buffer != nullptr);
     auto target = reinterpret_cast<char*>(buffer->buffer);
     const auto end = internal::u64toa(value, target);
     return end - target;
 }
 
-size_t nk_nk_json_write_string(char* CS_NONNULL buffer, const char* CS_NONNULL value, size_t size) {
+size_t nk_json_write_string(char* CS_NONNULL buffer, const char* CS_NONNULL value, size_t size) {
     static const char hexDigits[16] = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
     };
