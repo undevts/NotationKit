@@ -34,7 +34,7 @@ extension JSON: Encodable {
 }
 
 extension JSON: JSONDecodable {
-#if SWIFT_PACKAGE
+#if SWIFT_PACKAGE && swift(<5.9)
     public convenience init(_ json: JSON) {
         self.init(storage: json.storage, value: json.value)
     }

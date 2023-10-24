@@ -10,8 +10,9 @@ types = {
 extension StringKeyedJSON {
 % for type in keys:
 %   value = types[type]
-    @inlinable
+%
 % if type == 'T':
+    @inlinable
     public mutating func decoded<T>(key: String) -> T where T: JSONDecodable {
         T.init(item(key: key))
     }
@@ -41,33 +42,48 @@ extension StringKeyedJSON {
         item(key: key).decoded(compactMap: method)
     }
 % else:
+    /// Decodes a value as `${type}` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value as `${type}` type.
+    @inlinable
     public mutating func decoded(key: String) -> ${type} {
         item(key: key).${value}
     }
 
+    /// Decodes a value as `[${type}]` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value as `[${type}]` type.
     @inlinable
     public mutating func decoded(key: String) -> [${type}] {
         item(key: key).decoded(map: \.${value})
     }
 
+    /// Decodes a value as `[String: ${type}]` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value as `[String: ${type}]` type.
     @inlinable
     public mutating func decoded(key: String) -> [String: ${type}] {
         item(key: key).decoded(map: \.${value})
     }
 % end
 
-    @inlinable
 % if type == 'T':
+    @inlinable
     public mutating func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T where T: JSONFailable {
         T.init(item(key: key)) ?? `default`()
 % else:
+    /// Decodes a value as `${type}` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter `default`: A default value provided if a decode error was encountered.
+    /// - Returns: A value as `${type}` type.
+    @inlinable
     public mutating func decoded(key: String, `default`: @autoclosure () -> ${type}) -> ${type} {
         item(key: key).${value}Value ?? `default`()
 % end
     }
 
-    @inlinable
 % if type == 'T':
+    @inlinable
     public mutating func decodedValue<T>(key: String) -> T? where T: JSONFailable {
         T.init(item(key: key))
     }
@@ -76,6 +92,10 @@ extension StringKeyedJSON {
     public mutating func decodedValue<T>(key: String, as type: T.Type) -> T? where T: JSONFailable {
         T.init(item(key: key))
 % else:
+    /// Decodes a value as `Optional<${type}>` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value as `Optional<${type}>` type.
+    @inlinable
     public mutating func decodedValue(key: String) -> ${type}? {
         item(key: key).${value}Value
 % end
@@ -87,8 +107,9 @@ extension StringKeyedJSON {
 extension KeyedJSON {
 % for type in keys:
 %   value = types[type]
-    @inlinable
+%
 % if type == 'T':
+    @inlinable
     public mutating func decoded<T>(key: Key) -> T where T: JSONDecodable {
         T.init(item(key: key))
     }
@@ -118,33 +139,48 @@ extension KeyedJSON {
         item(key: key).decoded(compactMap: method)
     }
 % else:
+    /// Decodes a value as `${type}` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value as `${type}` type.
+    @inlinable
     public mutating func decoded(key: Key) -> ${type} {
         item(key: key).${value}
     }
 
+    /// Decodes a value as `[${type}]` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value as `[${type}]` type.
     @inlinable
     public mutating func decoded(key: Key) -> [${type}] {
         item(key: key).decoded(map: \.${value})
     }
 
+    /// Decodes a value as `[String: ${type}]` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value as `[String: ${type}]` type.
     @inlinable
     public mutating func decoded(key: Key) -> [String: ${type}] {
         item(key: key).decoded(map: \.${value})
     }
 % end
 
-    @inlinable
 % if type == 'T':
+    @inlinable
     public mutating func decoded<T>(key: Key, `default`: @autoclosure () -> T) -> T where T: JSONFailable {
         T.init(item(key: key)) ?? `default`()
 % else:
+    /// Decodes a value as `${type}` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter `default`: A default value provided if a decode error was encountered.
+    /// - Returns: A value as `${type}` type.
+    @inlinable
     public mutating func decoded(key: Key, `default`: @autoclosure () -> ${type}) -> ${type} {
         item(key: key).${value}Value ?? `default`()
 % end
     }
 
-    @inlinable
 % if type == 'T':
+    @inlinable
     public mutating func decodedValue<T>(key: Key) -> T? where T: JSONFailable {
         T.init(item(key: key))
     }
@@ -153,6 +189,10 @@ extension KeyedJSON {
     public mutating func decodedValue<T>(key: Key, as type: T.Type) -> T? where T: JSONFailable {
         T.init(item(key: key))
 % else:
+    /// Decodes a value as `Optional<${type}>` type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value as `Optional<${type}>` type.
+    @inlinable
     public mutating func decodedValue(key: Key) -> ${type}? {
         item(key: key).${value}Value
 % end

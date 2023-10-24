@@ -25,7 +25,12 @@ public struct JSONParseError: Error, LocalizedError {
 // Target: x86_64-apple-macosx12.0
 // swift-driver version: 1.45.2 Apple Swift version 5.6 (swiftlang-5.6.0.323.62 clang-1316.0.20.8)
 // Target: x86_64-apple-macosx12.0
-#if SWIFT_PACKAGE
+//
+// UPDATE:
+// Swift 5.9 test passes.
+// swift-driver version: 1.87.1 Apple Swift version 5.9 (swiftlang-5.9.0.128.108 clang-1500.0.40.1)
+// Target: arm64-apple-macosx14.0
+#if SWIFT_PACKAGE && swift(<5.9)
 /// An object representing a JSON value, array or object.
 public final class JSON {
     /// A static property that represents JSON null value.
@@ -144,6 +149,21 @@ extension JSON {
         }
         return result
     }
+    
+#if swift(>=5.9)
+    @inline(__always)
+    @usableFromInline
+    static func item<Key>(key: Key, _ json: inout JSON) where Key: CodingKey {
+        json = json.item(key: key)
+    }
+    
+    @inlinable
+    public func item<each Key: CodingKey>(keys: repeat each Key) -> JSON {
+        var result = self
+        repeat JSON.item(key: each keys, &result)
+        return result
+    }
+#endif
 
     @inline(__always)
     func count(of array: inout json_array) -> Int {
@@ -238,11 +258,13 @@ extension JSON {
 }
 
 extension JSON {
+    @inlinable
     public func root<T>(decoder: JSONSimdDecoder? = nil) throws -> T where T: Decodable {
         let decoder = decoder ?? JSONSimdDecoder()
         return try decoder.decode(T.self, storage: storage)
     }
 
+    @inlinable
     public func root<T>(as type: T.Type, decoder: JSONSimdDecoder? = nil) throws -> T where T: Decodable {
         let decoder = decoder ?? JSONSimdDecoder()
         return try decoder.decode(type, storage: storage)
@@ -267,13 +289,12 @@ extension JSON {
         return result
     }
 
-
-    /// Decode current value as a dictionary and calls the transform method on each JSON value in it.
+    /// Decode current value as an array and calls the transform method on each JSON value in it.
     ///
-    /// Same as `json.dictionary.map(method)` but more efficient.
+    /// Same as `json.array.map(method)` but more efficient.
     ///
     /// - Parameter method: A mapping closure.
-    /// - Returns: The mapped result, if current value is not a JSON object, an empty dictionary will return.
+    /// - Returns: The mapped result, if current value is not a JSON array, an empty array will return.
     public func decoded<T>(compactMap method: (JSON) -> T?) -> [T] {
         guard var root = arrayRoot else {
             return []
@@ -364,6 +385,12 @@ extension JSON {
         item(key: key).decoded(in: list, map: method)
     }
 
+    /// Decode current value as a dictionary and calls the transform method on each JSON value in it.
+    ///
+    /// Same as `json.dictionary.map(method)` but more efficient.
+    ///
+    /// - Parameter method: A mapping closure.
+    /// - Returns: The mapped result, if current value is not a JSON object, an empty dictionary will return.
     public func decoded<T>(map method: (JSON) -> T) -> [String: T] {
         guard var root = objectRoot else {
             return [:]
@@ -377,6 +404,12 @@ extension JSON {
         return result
     }
 
+    /// Decode current value as a dictionary and calls the transform method on each JSON value in it.
+    ///
+    /// Same as `json.dictionary.map(method)` but more efficient.
+    ///
+    /// - Parameter method: A mapping closure.
+    /// - Returns: The mapped result, if current value is not a JSON object, an empty dictionary will return.
     public func decoded<T>(compactMap method: (JSON) -> T?) -> [String: T] {
         guard var root = objectRoot else {
             return [:]

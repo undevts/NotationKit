@@ -10,31 +10,65 @@ types = {
 extension JSON {
 % for type in keys:
 %   value = types[type]
-    @inlinable
+%
 % if type == 'T':
+    /// Decodes a single value of the given type.
+    /// - Returns: A value of the requested type.
+    @inlinable
     public func decoded<T>() -> T where T: JSONDecodable {
         T.init(self)
     }
 
+    /// Decodes a single value of the given type.
+    /// - Parameter type: The type to decode as.
+    /// - Returns: A value of the requested type.
     @inlinable
     public func decoded<T>(as type: T.Type) -> T where T: JSONDecodable {
         T.init(self)
 % else:
+    /// Decodes a single value as `${type}` type.
+    /// - Seealso: ``${value}``
+    /// - Returns: A value as `${type}` type.
+    @inlinable
     public func decoded() -> ${type} {
         ${value}
 % end
     }
 
-    @inlinable
 % if type == 'T':
+    /// Decodes a single value of the given type.
+    /// - Parameter `default`: A default value provided if a decode error was encountered.
+    /// - Returns: A value of the requested type.
+    @inlinable
     public func decoded<T>(`default`: @autoclosure () -> T) -> T where T: JSONFailable {
         T.init(self) ?? `default`()
+    }
+
+    /// Decodes a single value of the given type.
+    /// - Returns: A value of the requested type.
+    @inlinable
+    public func decoded<T>() throws -> T where T: JSONCreatable {
+        try T.create(self).get()
+    }
+    
+    /// Decodes a single value of the given type.
+    /// - Parameter type: The type to decode as.
+    /// - Returns: A value of the requested type.
+    @inlinable
+    public func decoded<T>(as type: T.Type) throws -> T where T: JSONCreatable {
+        try T.create(self).get()
 % else:
+    /// Decodes a single value as `${type}` type, or a provided default value.
+    /// - Seealso: ``${value}Value``
+    /// - Parameter `default`: A default value provided if such value is absent.
+    /// - Returns: A value as `${type}` type.
+    @inlinable
     public func decoded(`default`: @autoclosure () -> ${type}) -> ${type} {
         ${value}Value ?? `default`()
 % end
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
 % if type == 'T':
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
@@ -42,6 +76,7 @@ extension JSON {
         T.init(item(key: key))
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T>(key: String, as type: T.Type) -> T where T: JSONDecodable {
@@ -53,6 +88,7 @@ extension JSON {
 % end
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
 % if type == 'T':
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
@@ -65,6 +101,7 @@ extension JSON {
 % end
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
 % if type == 'T':
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
@@ -72,6 +109,7 @@ extension JSON {
         T.init(item(key: key))
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decoded<T, Key>(key: Key, as type: T.Type) -> T where T: JSONDecodable, Key: CodingKey {
@@ -83,6 +121,7 @@ extension JSON {
 % end
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
 % if type == 'T':
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
@@ -95,21 +134,49 @@ extension JSON {
 % end
     }
 
-    @inlinable
 % if type == 'T':
+    /// Decodes a single value of the given type.
+    /// - Seealso: ``decodedValue(as:)-60jkr``
+    /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
+    @inlinable
     public func decodedValue<T>() -> T? where T: JSONFailable {
         T.init(self)
     }
 
+    /// Decodes a single value of the given type.
+    /// - Seealso: ``decodedValue()-5gr5a``
+    /// - Parameter type: The type to decode as.
+    /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
     public func decodedValue<T>(as type: T.Type) -> T? where T: JSONFailable {
         T.init(self)
+    }
+
+    /// Decodes a single value of the given type.
+    /// - Seealso: ``decodedValue(as:)-6wfda``
+    /// - Returns: A resolved result contains the value or a decode error.
+    @inlinable
+    public func decodedValue<T>() -> Result<T, Error> where T: JSONCreatable {
+        T.create(self)
+    }
+    
+    /// Decodes a single value of the given type.
+    /// - Seealso: ``decodedValue()-3mczh``
+    /// - Returns: A resolved result contains the value or a decode error.
+    @inlinable
+    public func decodedValue<T>(as type: T.Type) -> Result<T, Error> where T: JSONCreatable {
+        T.create(self)
 % else:
+    /// Decodes a single value as `Optional<${type}>` type.
+    /// - Seealso: ``${value}Value``
+    /// - Returns: A value as `Optional<${type}>` type.
+    @inlinable
     public func decodedValue() -> ${type}? {
         ${value}Value
 % end
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
 % if type == 'T':
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
@@ -117,6 +184,7 @@ extension JSON {
         T.init(item(key: key))
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decodedValue<T>(key: String, as type: T.Type) -> T? where T: JSONFailable {
@@ -128,6 +196,7 @@ extension JSON {
 % end
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
 % if type == 'T':
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
@@ -135,6 +204,7 @@ extension JSON {
         T.init(item(key: key))
     }
 
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
     @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
     public func decodedValue<T, Key>(key: Key, as type: T.Type) -> T? where T: JSONFailable, Key: CodingKey {

@@ -56,6 +56,7 @@ final class KeyedContainer {
     }
 
     @inline(__always)
+    @usableFromInline
     func item(key: String) -> JSON {
         // Current root is empty.
         if isEmpty {
@@ -141,6 +142,7 @@ public struct StringKeyedJSON {
         }
     }
 
+    @inlinable
     public mutating func item(key: String) -> JSON {
         // No need to COW here.
         delegate.item(key: key)
@@ -172,6 +174,7 @@ public struct KeyedJSON<Key> where Key: CodingKey {
         }
     }
 
+    @inlinable
     public mutating func item(key: Key) -> JSON {
         // No need to COW here.
         delegate.item(key: key.stringValue)

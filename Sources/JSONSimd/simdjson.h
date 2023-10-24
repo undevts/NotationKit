@@ -5498,7 +5498,7 @@ public:
   /**
    * Read this element as a boolean.
    *
-   * @return The boolean value
+   * @return The booleA value
    * @exception simdjson_error(INCORRECT_TYPE) if the JSON element is not a boolean.
    */
   inline operator bool() const noexcept(false);
@@ -27142,7 +27142,7 @@ protected:
    * you will only even move beyond the '[' if the user tells you that you have an
    * array. So you will be at the '}' character inside the array and, hopefully, you
    * will then catch the error because an array cannot start with '}', but the code
-   * processing Boolean values does not know this.
+   * processing BooleA values does not know this.
    *
    * So the contract is: first call 'peek_...' and then call 'advance_...' only
    * if you have determined that it is a type you can handle.
@@ -36894,7 +36894,7 @@ protected:
    * you will only even move beyond the '[' if the user tells you that you have an
    * array. So you will be at the '}' character inside the array and, hopefully, you
    * will then catch the error because an array cannot start with '}', but the code
-   * processing Boolean values does not know this.
+   * processing BooleA values does not know this.
    *
    * So the contract is: first call 'peek_...' and then call 'advance_...' only
    * if you have determined that it is a type you can handle.
@@ -47138,7 +47138,7 @@ protected:
    * you will only even move beyond the '[' if the user tells you that you have an
    * array. So you will be at the '}' character inside the array and, hopefully, you
    * will then catch the error because an array cannot start with '}', but the code
-   * processing Boolean values does not know this.
+   * processing BooleA values does not know this.
    *
    * So the contract is: first call 'peek_...' and then call 'advance_...' only
    * if you have determined that it is a type you can handle.
@@ -57381,7 +57381,7 @@ protected:
    * you will only even move beyond the '[' if the user tells you that you have an
    * array. So you will be at the '}' character inside the array and, hopefully, you
    * will then catch the error because an array cannot start with '}', but the code
-   * processing Boolean values does not know this.
+   * processing BooleA values does not know this.
    *
    * So the contract is: first call 'peek_...' and then call 'advance_...' only
    * if you have determined that it is a type you can handle.
@@ -67739,7 +67739,7 @@ protected:
    * you will only even move beyond the '[' if the user tells you that you have an
    * array. So you will be at the '}' character inside the array and, hopefully, you
    * will then catch the error because an array cannot start with '}', but the code
-   * processing Boolean values does not know this.
+   * processing BooleA values does not know this.
    *
    * So the contract is: first call 'peek_...' and then call 'advance_...' only
    * if you have determined that it is a type you can handle.
@@ -78420,7 +78420,7 @@ protected:
    * you will only even move beyond the '[' if the user tells you that you have an
    * array. So you will be at the '}' character inside the array and, hopefully, you
    * will then catch the error because an array cannot start with '}', but the code
-   * processing Boolean values does not know this.
+   * processing BooleA values does not know this.
    *
    * So the contract is: first call 'peek_...' and then call 'advance_...' only
    * if you have determined that it is a type you can handle.

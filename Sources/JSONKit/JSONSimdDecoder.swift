@@ -8,21 +8,21 @@ import Foundation
 import Combine
 #endif
 
-/// A drop-in replacement for the ``Swift.JSONDecoder``,
+/// A drop-in replacement for the `Swift.JSONDecoder`,
 /// powered by [simd-json](https://github.com/simdjson/simdjson).
 ///
-/// - Note: There is no support of ``Swift.JSONDecoder.KeyDecodingStrategy``.
+/// - Note: There is no support of `JSONDecoder.KeyDecodingStrategy`.
 public final class JSONSimdDecoder {
     /// The strategy to use in decoding dates.
-    /// Defaults to ``Swift.JSONDecoder.DateDecodingStrategy.deferredToDate``.
+    /// Defaults to `JSONDecoder.DateDecodingStrategy.deferredToDate`.
     public var dateDecodingStrategy = JSONDecoder.DateDecodingStrategy.deferredToDate
 
     /// The strategy to use in decoding binary data.
-    /// Defaults to ``Swift.JSONDecoder.DataDecodingStrategy.base64``.
+    /// Defaults to `JSONDecoder.DataDecodingStrategy.base64`.
     public var dataDecodingStrategy = JSONDecoder.DataDecodingStrategy.base64
 
     /// The strategy to use in decoding non-conforming numbers.
-    /// Defaults to ``Swift.JSONDecoder.NonConformingFloatDecodingStrategy.throw``.
+    /// Defaults to `JSONDecoder.NonConformingFloatDecodingStrategy.throw`.
     public var nonConformingFloatDecodingStrategy = JSONDecoder.NonConformingFloatDecodingStrategy.throw
 
     /// Contextual user-provided information for use during decoding.
@@ -49,7 +49,7 @@ public final class JSONSimdDecoder {
     ///
     /// - Parameter data: The JSON object to decode.
     /// - Returns: A value of the specified type, if the decoder can parse the data.
-    /// - Throws: ``JSONParseError`` or ``Swift.DecodingError``.
+    /// - Throws: ``JSONParseError`` or `DecodingError`.
     @inlinable
     public func decode<T>(from data: Data) throws -> T where T: Decodable {
         let storage = try JSONStorage.parse(data).get()
@@ -62,7 +62,7 @@ public final class JSONSimdDecoder {
     ///   - type: The type of the value to decode from the supplied JSON object.
     ///   - data: The JSON object to decode.
     /// - Returns: A value of the specified type, if the decoder can parse the data.
-    /// - Throws: ``JSONParseError`` or ``Swift.DecodingError``.
+    /// - Throws: ``JSONParseError`` or `DecodingError`.
     @inlinable
     public func decode<T>(_ type: T.Type, from data: Data) throws -> T where T: Decodable {
         let storage = try JSONStorage.parse(data).get()
