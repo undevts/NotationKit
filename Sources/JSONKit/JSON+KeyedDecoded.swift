@@ -409,46 +409,84 @@ extension StringKeyedJSON {
         item(key: key).stringValue
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value of the requested type.
     @inlinable
     public mutating func decoded<T>(key: String) -> T where T: JSONDecodable {
         T.init(item(key: key))
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter type: The type to decode as.
+    /// - Returns: A value of the requested type.
     @inlinable
     public mutating func decoded<T>(key: String, as type: T.Type) -> T where T: JSONDecodable {
         T.init(item(key: key))
     }
 
+    /// Decodes an array containing the results of mapping the given closure for the given key.
+    /// - Seealso: ``decoded(key:compactMap:)-7zb80``
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter method: A mapping closure.
+    /// - Returns: An array of the requested type.
     @inlinable
     public mutating func decoded<T>(key: String, map method: (JSON) -> T) -> [T] {
         item(key: key).decoded(map: method)
     }
 
+    /// Decodes an array containing the results of mapping the given closure for the given key.
+    /// - Seealso: ``decoded(key:map:)-6qvyj``
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter method: A mapping closure.
+    /// - Returns: An array of the requested type.
     @inlinable
     public mutating func decoded<T>(key: String, compactMap method: (JSON) -> T?) -> [T] {
         item(key: key).decoded(compactMap: method)
     }
 
+    /// Decodes a dictionary containing the results of mapping the given closure for the given key.
+    /// - Seealso: ``decoded(key:compactMap:)-5so5k``
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter method: A mapping closure.
+    /// - Returns: A dictionary of the requested type.
     @inlinable
     public mutating func decoded<T>(key: String, map method: (JSON) -> T) -> [String: T] {
         item(key: key).decoded(map: method)
     }
 
+    /// Decodes a dictionary containing the results of mapping the given closure for the given key.
+    /// - Seealso: ``decoded(key:map:)-lkle``
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter method: A mapping closure.
+    /// - Returns: A dictionary of the requested type.
     @inlinable
     public mutating func decoded<T>(key: String, compactMap method: (JSON) -> T?) -> [String: T] {
         item(key: key).decoded(compactMap: method)
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter `default`: A default value provided if a decode error was encountered.
+    /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
     public mutating func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T where T: JSONFailable {
         T.init(item(key: key)) ?? `default`()
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
     public mutating func decodedValue<T>(key: String) -> T? where T: JSONFailable {
         T.init(item(key: key))
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter type: The type to decode as.
+    /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
     public mutating func decodedValue<T>(key: String, as type: T.Type) -> T? where T: JSONFailable {
         T.init(item(key: key))
@@ -867,46 +905,84 @@ extension KeyedJSON {
         item(key: key).stringValue
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value of the requested type.
     @inlinable
     public mutating func decoded<T>(key: Key) -> T where T: JSONDecodable {
         T.init(item(key: key))
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter type: The type to decode as.
+    /// - Returns: A value of the requested type.
     @inlinable
     public mutating func decoded<T>(key: Key, as type: T.Type) -> T where T: JSONDecodable {
         T.init(item(key: key))
     }
 
+    /// Decodes an array containing the results of mapping the given closure for the given key.
+    /// - Seealso: ``decoded(key:compactMap:)-7uuhm``
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter method: A mapping closure.
+    /// - Returns: An array of the requested type.
     @inlinable
     public mutating func decoded<T>(key: Key, map method: (JSON) -> T) -> [T] {
         item(key: key).decoded(map: method)
     }
 
+    /// Decodes an array containing the results of mapping the given closure for the given key.
+    /// - Seealso: ``decoded(key:map:)-2x1dx``
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter method: A mapping closure.
+    /// - Returns: An array of the requested type.
     @inlinable
     public mutating func decoded<T>(key: Key, compactMap method: (JSON) -> T?) -> [T] {
         item(key: key).decoded(compactMap: method)
     }
 
+    /// Decodes a dictionary containing the results of mapping the given closure for the given key.
+    /// - Seealso: ``decoded(key:compactMap:)-5fwyn``
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter method: A mapping closure.
+    /// - Returns: A dictionary of the requested type.
     @inlinable
     public mutating func decoded<T>(key: Key, map method: (JSON) -> T) -> [String: T] {
         item(key: key).decoded(map: method)
     }
 
+    /// Decodes a dictionary containing the results of mapping the given closure for the given key.
+    /// - Seealso: ``decoded(key:map:)-5spsk``
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter method: A mapping closure.
+    /// - Returns: A dictionary of the requested type.
     @inlinable
     public mutating func decoded<T>(key: Key, compactMap method: (JSON) -> T?) -> [String: T] {
         item(key: key).decoded(compactMap: method)
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter `default`: A default value provided if a decode error was encountered.
+    /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
     public mutating func decoded<T>(key: Key, `default`: @autoclosure () -> T) -> T where T: JSONFailable {
         T.init(item(key: key)) ?? `default`()
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
     public mutating func decodedValue<T>(key: Key) -> T? where T: JSONFailable {
         T.init(item(key: key))
     }
 
+    /// Decodes a value of the given type for the given key.
+    /// - Parameter key: The key that the decoded value is associated with.
+    /// - Parameter type: The type to decode as.
+    /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
     public mutating func decodedValue<T>(key: Key, as type: T.Type) -> T? where T: JSONFailable {
         T.init(item(key: key))
