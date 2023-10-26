@@ -58,6 +58,7 @@ public final class JSON {
 }
 #else
 /// A JSON value, array or object.
+@frozen
 public struct JSON {
     /// A static property that represents JSON null value.
     public static let null = JSON(ref: nk_json_create_null())
@@ -237,6 +238,18 @@ extension JSON {
     public subscript<Key>(key: Key) -> JSON where Key: CodingKey {
         item(key: key)
     }
+    
+    @inline(__always)
+    @usableFromInline
+    static func _parse(_ value: String) -> Result<JSON, JSONParseError> {
+        JSONStorage.parse(value).map(JSON.init(storage:))
+    }
+    
+    @inline(__always)
+    @usableFromInline
+    static func _parse(_ data: Data) -> Result<JSON, JSONParseError> {
+        JSONStorage.parse(data).map(JSON.init(storage:))
+    }
 
     /// Parses a JSON string, converting it to an in-memory representation.
     ///
@@ -244,7 +257,7 @@ extension JSON {
     /// - Returns: A result indicating success or failure.
     @inlinable
     public static func parse(_ value: String) -> Result<JSON, JSONParseError> {
-        JSONStorage.parse(value).map(JSON.init(storage:))
+        _parse(value)
     }
 
     /// Parses a JSON data, converting it to an in-memory representation.
@@ -253,7 +266,7 @@ extension JSON {
     /// - Returns: A result indicating success or failure.
     @inlinable
     public static func parse(_ data: Data) -> Result<JSON, JSONParseError> {
-        JSONStorage.parse(data).map(JSON.init(storage:))
+        _parse(data)
     }
 }
 

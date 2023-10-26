@@ -70,63 +70,28 @@ extension Dictionary: JSONFailable where Key == String, Value: JSONFailable {
 
 extension JSON {
     @inlinable
-    public func decoded<T>() -> Result<T, Error> where T: JSONCreatable {
-        T.create(self)
-    }
-
-    @inlinable
-    public func decoded<T>(`default`: @autoclosure () -> T) -> T where T: JSONCreatable {
-        switch T.create(self) {
-        case let .success(value):
-            return value
-        case .failure:
-            return `default`()
-        }
-    }
-
-    @inlinable
-    public func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T where T: JSONCreatable {
-        switch T.create(item(key: key)) {
-        case let .success(value):
-            return value
-        case .failure:
-            return `default`()
-        }
-    }
-
-    @inlinable
-    public func decoded<T, Key>(key: Key, `default`: @autoclosure () -> T) -> T where T: JSONCreatable, Key: CodingKey {
-        switch T.create(item(key: key)) {
-        case let .success(value):
-            return value
-        case .failure:
-            return `default`()
-        }
-    }
-
-    @inlinable
     public static func parse<T>(_ value: String) -> Result<T, JSONParseError> where T: JSONDecodable {
-        parse(value).map(T.init)
+        _parse(value).map(T.init)
     }
 
     @inlinable
     public static func parse<T>(_ data: Data) -> Result<T, JSONParseError> where T: JSONDecodable {
-        parse(data).map(T.init)
+        _parse(data).map(T.init)
     }
 
     @inlinable
     public static func parse<T>(_ value: String) -> Result<T?, JSONParseError> where T: JSONFailable {
-        parse(value).map(T.init)
+        _parse(value).map(T.init)
     }
 
     @inlinable
     public static func parse<T>(_ data: Data) -> Result<T?, JSONParseError> where T: JSONFailable {
-        parse(data).map(T.init)
+        _parse(data).map(T.init)
     }
 
     @inlinable
     public static func parse<T>(_ value: String) -> Result<T, Error> where T: JSONCreatable {
-        switch parse(value) {
+        switch _parse(value) {
         case let .success(json):
             return T.create(json)
         case let .failure(error):
@@ -136,7 +101,7 @@ extension JSON {
 
     @inlinable
     public static func parse<T>(_ data: Data) -> Result<T, Error> where T: JSONCreatable {
-        switch parse(data) {
+        switch _parse(data) {
         case let .success(json):
             return T.create(json)
         case let .failure(error):
@@ -146,31 +111,41 @@ extension JSON {
 
     @inlinable
     public static func parse<T>(_ value: String, as type: T.Type) -> Result<T, JSONParseError> where T: JSONDecodable {
-        parse(value)
+        _parse(value).map(T.init)
     }
 
     @inlinable
     public static func parse<T>(_ data: Data, as type: T.Type) -> Result<T, JSONParseError> where T: JSONDecodable {
-        parse(data)
+        _parse(data).map(T.init)
     }
 
     @inlinable
     public static func parse<T>(_ value: String, as type: T.Type) -> Result<T?, JSONParseError> where T: JSONFailable {
-        parse(value)
+        _parse(value).map(T.init)
     }
 
     @inlinable
     public static func parse<T>(_ data: Data, as type: T.Type) -> Result<T?, JSONParseError> where T: JSONFailable {
-        parse(data)
+        _parse(data).map(T.init)
     }
 
     @inlinable
     public static func parse<T>(_ value: String, as type: T.Type) -> Result<T, Error> where T: JSONCreatable {
-        parse(value)
+        switch _parse(value) {
+        case let .success(json):
+            return T.create(json)
+        case let .failure(error):
+            return .failure(error)
+        }
     }
 
     @inlinable
     public static func parse<T>(_ data: Data, as type: T.Type) -> Result<T, Error> where T: JSONCreatable {
-        parse(data)
+        switch _parse(data) {
+        case let .success(json):
+            return T.create(json)
+        case let .failure(error):
+            return .failure(error)
+        }
     }
 }

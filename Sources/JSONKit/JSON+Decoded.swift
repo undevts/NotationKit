@@ -706,6 +706,43 @@ extension JSON {
     public func decoded<T>(as type: T.Type) throws -> T where T: JSONCreatable {
         try T.create(self).get()
     }
+    
+    /// Decodes a single value of the given type.
+    /// - Parameter `default`: A default value provided if a decode error was encountered.
+    /// - Returns: A value of the requested type.
+    @inlinable
+    public func decoded<T>(`default`: @autoclosure () -> T) -> T where T: JSONCreatable {
+        switch T.create(self) {
+        case let .success(value):
+            return value
+        case .failure:
+            return `default`()
+        }
+    }
+
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
+    @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
+    public func decoded<T>(key: String, `default`: @autoclosure () -> T) -> T where T: JSONCreatable {
+        switch T.create(item(key: key)) {
+        case let .success(value):
+            return value
+        case .failure:
+            return `default`()
+        }
+    }
+
+    /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
+    @inlinable
+    @available(*, deprecated, message: "use `StringKeyedJSON` or `KeyedJSON` instead.")
+    public func decoded<T, Key>(key: Key, `default`: @autoclosure () -> T) -> T where T: JSONCreatable, Key: CodingKey {
+        switch T.create(item(key: key)) {
+        case let .success(value):
+            return value
+        case .failure:
+            return `default`()
+        }
+    }
 
     /// - Seealso: ``KeyedJSON``, ``StringKeyedJSON``
     @inlinable
@@ -750,7 +787,7 @@ extension JSON {
     }
 
     /// Decodes a single value of the given type.
-    /// - Seealso: ``decodedValue(as:)-60jkr``
+    /// - Seealso: ``decodedValue(as:)-4gwie``
     /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
     public func decodedValue<T>() -> T? where T: JSONFailable {
@@ -758,7 +795,7 @@ extension JSON {
     }
 
     /// Decodes a single value of the given type.
-    /// - Seealso: ``decodedValue()-5gr5a``
+    /// - Seealso: ``decodedValue()-6bbi3``
     /// - Parameter type: The type to decode as.
     /// - Returns: A value of the requested type, or `nil` if a decode error was encountered.
     @inlinable
@@ -767,7 +804,7 @@ extension JSON {
     }
 
     /// Decodes a single value of the given type.
-    /// - Seealso: ``decodedValue(as:)-6wfda``
+    /// - Seealso: ``decodedValue(as:)-2lc6z``
     /// - Returns: A resolved result contains the value or a decode error.
     @inlinable
     public func decodedValue<T>() -> Result<T, Error> where T: JSONCreatable {
@@ -775,7 +812,7 @@ extension JSON {
     }
     
     /// Decodes a single value of the given type.
-    /// - Seealso: ``decodedValue()-3mczh``
+    /// - Seealso: ``decodedValue()-3itr4``
     /// - Returns: A resolved result contains the value or a decode error.
     @inlinable
     public func decodedValue<T>(as type: T.Type) -> Result<T, Error> where T: JSONCreatable {
